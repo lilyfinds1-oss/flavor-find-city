@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { Send, Sparkles, MapPin, DollarSign, Utensils, Clock, Leaf, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Send, Sparkles, MapPin, DollarSign, Utensils, Leaf } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useRestaurants } from "@/hooks/useRestaurants";
+import { ChatMessage } from "@/components/assistant/ChatMessage";
+import { QuickPrompts } from "@/components/assistant/QuickPrompts";
 
 type Message = {
   id: string;
@@ -20,21 +22,6 @@ type Message = {
   }[];
 };
 
-const quickPrompts = [
-  { icon: "🍕", text: "Something quick and cheap" },
-  { icon: "🥩", text: "A nice steakhouse for date night" },
-  { icon: "🍛", text: "Best desi food nearby" },
-  { icon: "🥗", text: "Healthy vegan options" },
-  { icon: "🥙", text: "Halal restaurants" },
-  { icon: "☕", text: "Cozy cafe for work" },
-];
-
-const mockSuggestions = [
-  { name: "Spice Garden", slug: "spice-garden", cuisine: "Desi • Indian", price: "$$", match: "95% match" },
-  { name: "Karahi Point", slug: "karahi-point", cuisine: "Pakistani • Halal", price: "$$", match: "92% match" },
-  { name: "Mediterranean Grill", slug: "mediterranean-grill", cuisine: "Mediterranean • Halal", price: "$$", match: "88% match" },
-];
-
 export default function Assistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -45,6 +32,17 @@ export default function Assistant() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { data: restaurants } = useRestaurants({});
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSend = async (text?: string) => {
     const messageText = text || input;
@@ -60,17 +58,41 @@ export default function Assistant() {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Prepare conversation history for the API
+      const conversationHistory = [...messages, userMessage].map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("food-assistant", {
+        body: { 
+          messages: conversationHistory,
+          restaurants: restaurants?.slice(0, 20) // Send top 20 restaurants for context
+        },
+      });
+
+      if (error) throw error;
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Based on your request for "${messageText}", here are my top picks! These restaurants match your preferences perfectly. 🎯`,
-        suggestions: mockSuggestions,
+        content: data.content || "I'm sorry, I couldn't process that request.",
+        suggestions: data.suggestions,
       };
+      
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Error calling food assistant:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "I'm having trouble connecting right now. Please try again in a moment! 🍽️",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -93,70 +115,14 @@ export default function Assistant() {
         </div>
 
         {/* Quick Prompts */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {quickPrompts.map((prompt, i) => (
-            <Button
-              key={i}
-              variant="outline"
-              size="sm"
-              onClick={() => handleSend(prompt.text)}
-              className="gap-2"
-            >
-              <span>{prompt.icon}</span>
-              {prompt.text}
-            </Button>
-          ))}
-        </div>
+        <QuickPrompts onSelect={handleSend} disabled={isLoading} />
 
         {/* Chat Area */}
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           {/* Messages */}
           <div className="h-[400px] overflow-y-auto p-4 space-y-4 custom-scrollbar">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  <p>{message.content}</p>
-
-                  {/* Suggestions */}
-                  {message.suggestions && (
-                    <div className="mt-4 space-y-2">
-                      {message.suggestions.map((suggestion, i) => (
-                        <Link
-                          key={i}
-                          to={`/restaurant/${suggestion.slug}`}
-                          className="block bg-card rounded-xl p-3 hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-display font-semibold text-foreground">
-                                {suggestion.name}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">
-                                {suggestion.cuisine} • {suggestion.price}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="bg-success/20 text-success">
-                                {suggestion.match}
-                              </Badge>
-                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ChatMessage key={message.id} message={message} />
             ))}
 
             {isLoading && (
@@ -170,6 +136,7 @@ export default function Assistant() {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}

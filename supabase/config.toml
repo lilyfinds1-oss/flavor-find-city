@@ -1,1 +1,4 @@
 project_id = "ypcsinlgsmrlnidsparm"
+
+[functions.food-assistant]
+verify_jwt = false
