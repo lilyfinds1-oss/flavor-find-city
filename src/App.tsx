@@ -12,6 +12,7 @@ import Deals from "./pages/Deals";
 import Leaderboard from "./pages/Leaderboard";
 import Assistant from "./pages/Assistant";
 import MapPage from "./pages/Map";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
