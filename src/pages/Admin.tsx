@@ -7,7 +7,8 @@ import { Footer } from "@/components/layout/Footer";
 import AdminOverview from "@/components/admin/AdminOverview";
 import RestaurantManager from "@/components/admin/RestaurantManager";
 import ReviewModerator from "@/components/admin/ReviewModerator";
-import { Shield, Store, MessageSquare, BarChart3 } from "lucide-react";
+import SettingsPanel from "@/components/admin/SettingsPanel";
+import { Shield, Store, MessageSquare, BarChart3, Settings } from "lucide-react";
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth();
@@ -47,7 +48,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -59,6 +60,10 @@ export default function Admin() {
             <TabsTrigger value="reviews" className="gap-2">
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Reviews</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2">
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
 
@@ -72,6 +77,10 @@ export default function Admin() {
 
           <TabsContent value="reviews">
             <ReviewModerator />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsPanel />
           </TabsContent>
         </Tabs>
       </main>
