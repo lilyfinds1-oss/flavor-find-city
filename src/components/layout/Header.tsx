@@ -69,7 +69,7 @@ export function Header() {
           {/* Location */}
           <Button variant="ghost" size="sm" className="hidden sm:flex gap-1 text-muted-foreground">
             <MapPin className="w-4 h-4" />
-            <span className="text-sm">Toronto</span>
+            <span className="text-sm">Lahore</span>
             <ChevronDown className="w-3 h-3" />
           </Button>
 
