@@ -1,29 +1,44 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Key, Save, ExternalLink } from "lucide-react";
+import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useAppConfig, useUpdateAppConfig } from "@/hooks/useAppConfig";
 
 export default function SettingsPanel() {
+  const { data: savedToken, isLoading } = useAppConfig("mapbox_public_token");
+  const updateConfig = useUpdateAppConfig();
   const [mapboxToken, setMapboxToken] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+
+  // Sync input with saved value
+  useEffect(() => {
+    if (savedToken) {
+      setMapboxToken(savedToken);
+    }
+  }, [savedToken]);
 
   const handleSaveMapbox = async () => {
     if (!mapboxToken.trim()) {
       toast.error("Please enter a valid Mapbox token");
       return;
     }
-    
-    setIsSaving(true);
-    // TODO: Save to backend configuration
-    setTimeout(() => {
+
+    try {
+      await updateConfig.mutateAsync({
+        key: "mapbox_public_token",
+        value: mapboxToken.trim(),
+      });
       toast.success("Mapbox token saved successfully");
-      setIsSaving(false);
-    }, 1000);
+    } catch (error) {
+      console.error("Failed to save token:", error);
+      toast.error("Failed to save token. Make sure you have admin permissions.");
+    }
   };
+
+  const isConfigured = !!savedToken && savedToken.length > 0;
 
   return (
     <div className="space-y-6">
@@ -39,8 +54,8 @@ export default function SettingsPanel() {
                 <CardDescription>Configure the interactive map for restaurant discovery</CardDescription>
               </div>
             </div>
-            <Badge variant="secondary">
-              Required for Map
+            <Badge variant={isConfigured ? "default" : "secondary"}>
+              {isConfigured ? "Configured" : "Required for Map"}
             </Badge>
           </div>
         </CardHeader>
@@ -57,6 +72,7 @@ export default function SettingsPanel() {
               value={mapboxToken}
               onChange={(e) => setMapboxToken(e.target.value)}
               className="font-mono"
+              disabled={isLoading}
             />
             <p className="text-xs text-muted-foreground">
               Get your free token from{" "}
@@ -73,9 +89,13 @@ export default function SettingsPanel() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button onClick={handleSaveMapbox} disabled={isSaving} className="gap-2">
+            <Button 
+              onClick={handleSaveMapbox} 
+              disabled={updateConfig.isPending || isLoading} 
+              className="gap-2"
+            >
               <Save className="w-4 h-4" />
-              {isSaving ? "Saving..." : "Save Token"}
+              {updateConfig.isPending ? "Saving..." : "Save Token"}
             </Button>
             {mapboxToken && (
               <span className="text-sm text-muted-foreground">
@@ -113,9 +133,16 @@ export default function SettingsPanel() {
                   <p className="text-xs text-muted-foreground">Interactive maps & geocoding</p>
                 </div>
               </div>
-              <Badge variant={mapboxToken ? "default" : "secondary"}>
-                {mapboxToken ? "Configured" : "Not configured"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                {isConfigured ? (
+                  <CheckCircle className="w-4 h-4 text-success" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-muted-foreground" />
+                )}
+                <Badge variant={isConfigured ? "default" : "secondary"}>
+                  {isConfigured ? "Connected" : "Not configured"}
+                </Badge>
+              </div>
             </div>
           </div>
         </CardContent>
