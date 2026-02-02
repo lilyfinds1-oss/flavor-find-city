@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, Gift, ChevronDown } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { href: "/explore", label: "Explore" },
@@ -14,6 +24,16 @@ const navLinks = [
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, loading, isAdmin, signOut } = useAuth();
+
+  const getUserInitials = () => {
+    if (!user?.email) return "U";
+    return user.email.charAt(0).toUpperCase();
+  };
+
+  const getDisplayName = () => {
+    return user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-border/50">
@@ -73,13 +93,74 @@ export function Header() {
             <ChevronDown className="w-3 h-3" />
           </Button>
 
-          {/* Auth */}
-          <Link to="/auth">
-            <Button size="sm" className="gap-2">
-              <User className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign In</span>
-            </Button>
-          </Link>
+          {/* Auth / User Menu */}
+          {loading ? (
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2 px-2">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden lg:inline text-sm font-medium max-w-24 truncate">
+                    {getDisplayName()}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{getDisplayName()}</span>
+                    <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/leaderboard" className="cursor-pointer">
+                    <Trophy className="w-4 h-4 mr-2 text-amber" />
+                    Leaderboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer">
+                        <Shield className="w-4 h-4 mr-2 text-primary" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => signOut()} 
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/auth">
+              <Button size="sm" className="gap-2">
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+            </Link>
+          )}
 
           {/* Mobile Menu Toggle */}
           <Button
@@ -134,7 +215,31 @@ export function Header() {
                 <Trophy className="w-5 h-5 text-amber" />
                 <span className="font-medium">Leaderboard</span>
               </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-secondary"
+                >
+                  <Shield className="w-5 h-5 text-primary" />
+                  <span className="font-medium">Admin Dashboard</span>
+                </Link>
+              )}
             </div>
+            {user && (
+              <div className="border-t border-border mt-2 pt-2">
+                <button
+                  onClick={() => {
+                    signOut();
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-secondary w-full"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Sign Out</span>
+                </button>
+              </div>
+            )}
           </nav>
         </div>
       )}
