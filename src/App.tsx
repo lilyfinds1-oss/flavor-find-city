@@ -13,6 +13,8 @@ import Leaderboard from "./pages/Leaderboard";
 import Assistant from "./pages/Assistant";
 import MapPage from "./pages/Map";
 import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
+import TopPosts from "./pages/TopPosts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/top-posts" element={<TopPosts />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

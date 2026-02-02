@@ -128,8 +128,14 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="cursor-pointer">
-                    <Settings className="w-4 h-4 mr-2" />
+                    <User className="w-4 h-4 mr-2" />
                     My Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/top-posts" className="cursor-pointer">
+                    <Trophy className="w-4 h-4 mr-2 text-amber" />
+                    Top Posts
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
