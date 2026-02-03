@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Star, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type Suggestion = {
   name: string;
@@ -23,15 +24,24 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   return (
-    <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+    <div className={cn(
+      "flex",
+      message.role === "user" ? "justify-end" : "justify-start"
+    )}>
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+        className={cn(
+          "max-w-[85%] rounded-2xl px-4 py-3",
           message.role === "user"
-            ? "bg-primary text-primary-foreground"
-            : "bg-secondary text-secondary-foreground"
-        }`}
+            ? "bg-gradient-primary text-white"
+            : "glass border border-border/50"
+        )}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        <p className={cn(
+          "whitespace-pre-wrap text-sm leading-relaxed",
+          message.role === "assistant" && "text-foreground"
+        )}>
+          {message.content}
+        </p>
 
         {/* Suggestions */}
         {message.suggestions && message.suggestions.length > 0 && (
@@ -40,22 +50,23 @@ export function ChatMessage({ message }: ChatMessageProps) {
               <Link
                 key={i}
                 to={`/restaurant/${suggestion.slug}`}
-                className="block bg-card rounded-xl p-3 hover:shadow-md transition-shadow"
+                className="block bg-card/80 rounded-xl p-3 hover:bg-card transition-colors border border-border/50 group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-display font-semibold text-foreground">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                       {suggestion.name}
                     </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {suggestion.cuisine} • {suggestion.price}
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
+                      <span>{suggestion.cuisine}</span>
+                      <span className="text-primary font-medium">{suggestion.price}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-success/20 text-success">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge className="bg-success/20 text-success border-0 text-xs">
                       {suggestion.match}
                     </Badge>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
               </Link>

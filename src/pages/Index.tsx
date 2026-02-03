@@ -1,19 +1,31 @@
+import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { HeroSection } from "@/components/home/HeroSection";
-import { CategorySection } from "@/components/home/CategorySection";
-import { TrendingSection } from "@/components/home/TrendingSection";
-import { DealsSection } from "@/components/home/DealsSection";
+import { AIPromptHero } from "@/components/discover/AIPromptHero";
+import { LiveTrendingBar } from "@/components/discover/LiveTrendingBar";
+import { DiscoveryFeed } from "@/components/discover/DiscoveryFeed";
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    // Scroll to feed
+    const feedSection = document.getElementById("discovery-feed");
+    if (feedSection) {
+      feedSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <HeroSection />
-        <CategorySection />
-        <TrendingSection />
-        <DealsSection />
+        <AIPromptHero onSearch={handleSearch} />
+        <LiveTrendingBar />
+        <div id="discovery-feed">
+          <DiscoveryFeed searchQuery={searchQuery} />
+        </div>
       </main>
       <Footer />
     </div>
