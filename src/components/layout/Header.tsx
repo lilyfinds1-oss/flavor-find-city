@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Settings } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,8 +17,9 @@ import {
 const navLinks = [
   { href: "/explore", label: "Explore" },
   { href: "/top-100", label: "Top 100" },
-  { href: "/deals", label: "Deals", badge: "New" },
+  { href: "/deals", label: "Deals" },
   { href: "/map", label: "Map" },
+  { href: "/top-posts", label: "Reviews" },
 ];
 
 export function Header() {
@@ -36,15 +37,19 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full glass border-b border-border/50">
+    <header className="sticky top-0 z-50 w-full glass-heavy border-b border-border/30">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow duration-300">
-            <span className="text-lg">🍽️</span>
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="relative">
+            <div className="w-9 h-9 rounded-xl bg-gradient-ai flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-ai/30 transition-shadow duration-300">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            {/* Subtle glow on hover */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-ai opacity-0 group-hover:opacity-30 blur-lg transition-opacity duration-300" />
           </div>
-          <span className="font-display font-bold text-xl text-foreground">
-            City<span className="text-primary">Bites</span>
+          <span className="font-display font-bold text-xl text-foreground tracking-tight">
+            City<span className="gradient-text">Bites</span>
           </span>
         </Link>
 
@@ -55,17 +60,15 @@ export function Header() {
               key={link.href}
               to={link.href}
               className={cn(
-                "relative px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                "relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200",
                 location.pathname === link.href
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  ? "text-foreground bg-muted"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
               {link.label}
-              {link.badge && (
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-primary text-primary-foreground rounded-full">
-                  {link.badge}
-                </span>
+              {location.pathname === link.href && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
               )}
             </Link>
           ))}
@@ -75,57 +78,48 @@ export function Header() {
         <div className="flex items-center gap-2">
           {/* AI Assistant Button */}
           <Link to="/assistant" className="hidden sm:block">
-            <Button variant="glass" size="sm" className="gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="hidden lg:inline">What to eat?</span>
+            <Button variant="ai" size="sm" className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden lg:inline">Ask AI</span>
             </Button>
           </Link>
 
           {/* Search */}
-          <Button variant="ghost" size="icon" className="text-muted-foreground">
-            <Search className="w-5 h-5" />
+          <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
+            <Search className="w-4 h-4" />
           </Button>
 
           {/* Location */}
-          <Button variant="ghost" size="sm" className="hidden sm:flex gap-1 text-muted-foreground">
-            <MapPin className="w-4 h-4" />
+          <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5 text-muted-foreground hover:text-foreground">
+            <MapPin className="w-3.5 h-3.5" />
             <span className="text-sm">Lahore</span>
-            <ChevronDown className="w-3 h-3" />
+            <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
 
           {/* Auth / User Menu */}
           {loading ? (
-            <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+            <div className="w-8 h-8 rounded-full shimmer" />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 px-2">
-                  <Avatar className="w-8 h-8">
+                <Button variant="ghost" size="sm" className="gap-2 px-2 hover:bg-muted/50">
+                  <Avatar className="w-8 h-8 border-2 border-border">
                     <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                    <AvatarFallback className="bg-gradient-primary text-white text-xs font-semibold">
                       {getUserInitials()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden lg:inline text-sm font-medium max-w-24 truncate">
-                    {getDisplayName()}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                  <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 glass border-border/50">
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
                     <span className="font-medium">{getDisplayName()}</span>
                     <span className="text-xs text-muted-foreground truncate">{user.email}</span>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/leaderboard" className="cursor-pointer">
-                    <Trophy className="w-4 h-4 mr-2 text-amber" />
-                    Leaderboard
-                  </Link>
-                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="cursor-pointer">
                     <User className="w-4 h-4 mr-2" />
@@ -133,23 +127,23 @@ export function Header() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/top-posts" className="cursor-pointer">
-                    <Trophy className="w-4 h-4 mr-2 text-amber" />
-                    Top Posts
+                  <Link to="/leaderboard" className="cursor-pointer">
+                    <Trophy className="w-4 h-4 mr-2 text-accent" />
+                    Leaderboard
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
                   <>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-border/50" />
                     <DropdownMenuItem asChild>
                       <Link to="/admin" className="cursor-pointer">
-                        <Shield className="w-4 h-4 mr-2 text-primary" />
+                        <Shield className="w-4 h-4 mr-2 text-ai-pulse" />
                         Admin Dashboard
                       </Link>
                     </DropdownMenuItem>
                   </>
                 )}
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuItem 
                   onClick={() => signOut()} 
                   className="cursor-pointer text-destructive focus:text-destructive"
@@ -161,7 +155,7 @@ export function Header() {
             </DropdownMenu>
           ) : (
             <Link to="/auth">
-              <Button size="sm" className="gap-2">
+              <Button size="sm" variant="default" className="gap-2">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">Sign In</span>
               </Button>
@@ -171,7 +165,7 @@ export function Header() {
           {/* Mobile Menu Toggle */}
           <Button
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             className="md:hidden"
             onClick={() => setIsOpen(!isOpen)}
           >
@@ -182,7 +176,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b border-border animate-slide-in-bottom">
+        <div className="md:hidden absolute top-16 left-0 right-0 glass-heavy border-b border-border/30 animate-slide-in-bottom">
           <nav className="container py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
@@ -190,56 +184,47 @@ export function Header() {
                 to={link.href}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  "flex items-center justify-between px-4 py-3 rounded-lg transition-colors",
+                  "flex items-center justify-between px-4 py-3 rounded-xl transition-colors",
                   location.pathname === link.href
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground hover:bg-secondary"
+                    ? "text-foreground bg-muted"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
                 <span className="font-medium">{link.label}</span>
-                {link.badge && (
-                  <span className="px-2 py-0.5 text-xs font-bold bg-gradient-primary text-primary-foreground rounded-full">
-                    {link.badge}
-                  </span>
-                )}
               </Link>
             ))}
-            <div className="border-t border-border mt-2 pt-2">
+            <div className="border-t border-border/30 mt-2 pt-2">
               <Link
                 to="/assistant"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-secondary"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted/50"
               >
-                <Sparkles className="w-5 h-5 text-primary" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-ai flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
                 <span className="font-medium">AI Food Assistant</span>
-              </Link>
-              <Link
-                to="/leaderboard"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-secondary"
-              >
-                <Trophy className="w-5 h-5 text-amber" />
-                <span className="font-medium">Leaderboard</span>
               </Link>
               {isAdmin && (
                 <Link
                   to="/admin"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-secondary"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted/50"
                 >
-                  <Shield className="w-5 h-5 text-primary" />
+                  <div className="w-8 h-8 rounded-lg bg-ai-pulse/20 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-ai-pulse" />
+                  </div>
                   <span className="font-medium">Admin Dashboard</span>
                 </Link>
               )}
             </div>
             {user && (
-              <div className="border-t border-border mt-2 pt-2">
+              <div className="border-t border-border/30 mt-2 pt-2">
                 <button
                   onClick={() => {
                     signOut();
                     setIsOpen(false);
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-secondary w-full"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 w-full"
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Sign Out</span>

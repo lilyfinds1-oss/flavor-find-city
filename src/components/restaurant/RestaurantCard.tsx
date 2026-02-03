@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { Star, MapPin, TrendingUp, Heart, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Star, MapPin, TrendingUp, Flame, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RestaurantCardProps {
@@ -19,6 +17,7 @@ interface RestaurantCardProps {
   isTrending?: boolean;
   isNew?: boolean;
   hasDeal?: boolean;
+  aiReason?: string;
 }
 
 export function RestaurantCard({
@@ -36,95 +35,93 @@ export function RestaurantCard({
   isTrending = false,
   isNew = false,
   hasDeal = false,
+  aiReason,
 }: RestaurantCardProps) {
   return (
     <Link
       to={`/restaurant/${slug}`}
-      className="group block bg-card rounded-2xl overflow-hidden card-hover border border-border/50"
+      className="group block rounded-2xl overflow-hidden transition-all duration-500 bg-card border border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
     >
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={coverImage}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-2">
           {rank && rank <= 10 && (
-            <Badge className="bg-gradient-gold text-charcoal font-bold border-0">
+            <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-gradient-gold text-charcoal">
               #{rank}
-            </Badge>
+            </span>
           )}
           {isTrending && (
-            <Badge className="bg-primary text-primary-foreground border-0 gap-1">
+            <span className="chip-trending flex items-center gap-1 text-xs font-medium px-2.5 py-1">
               <TrendingUp className="w-3 h-3" />
               Trending
-            </Badge>
+            </span>
           )}
           {isNew && (
-            <Badge className="bg-success text-success-foreground border-0">
+            <span className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-success text-success-foreground">
               New
-            </Badge>
+            </span>
           )}
           {hasDeal && (
-            <Badge className="bg-amber text-charcoal font-semibold border-0">
+            <span className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-accent text-accent-foreground">
+              <Flame className="w-3 h-3" />
               Deal
-            </Badge>
+            </span>
           )}
         </div>
 
-        {/* Favorite button */}
-        <Button
-          variant="glass"
-          size="icon"
-          className="absolute top-3 right-3 w-9 h-9 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => {
-            e.preventDefault();
-            // Handle favorite
-          }}
-        >
-          <Heart className="w-4 h-4" />
-        </Button>
+        {/* Rating badge */}
+        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm">
+          <Star className="w-3.5 h-3.5 text-accent fill-accent" />
+          <span className="text-sm font-semibold text-white">{rating.toFixed(1)}</span>
+        </div>
 
-        {/* Bottom info */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1">
-              <Star className="w-4 h-4 text-amber fill-amber" />
-              <span className="text-sm font-semibold text-white">{rating.toFixed(1)}</span>
-              <span className="text-xs text-white/70">({reviewCount})</span>
-            </div>
+        {/* Bottom content overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h3 className="font-display text-lg font-bold text-white mb-1 line-clamp-1 group-hover:text-primary-glow transition-colors">
+            {name}
+          </h3>
+          <div className="flex items-center gap-2 text-sm text-white/80">
+            <span>{cuisines.slice(0, 2).join(" · ")}</span>
+            <span className="text-primary font-medium">{priceRange}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Content footer */}
+      <div className="p-3 border-t border-border/50 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="w-3.5 h-3.5" />
+            <span className="line-clamp-1">{neighborhood}</span>
           </div>
           <div className={cn(
-            "flex items-center gap-1 text-xs px-2 py-1 rounded-full backdrop-blur-sm",
-            isOpen ? "bg-success/80 text-white" : "bg-red-500/80 text-white"
+            "flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
+            isOpen 
+              ? "bg-success/20 text-success" 
+              : "bg-destructive/20 text-destructive"
           )}>
             <Clock className="w-3 h-3" />
             {isOpen ? "Open" : "Closed"}
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
-          {name}
-        </h3>
-        
-        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-          <span>{cuisines.slice(0, 2).join(" • ")}</span>
-          <span className="text-primary font-medium">{priceRange}</span>
-        </div>
-
-        <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
-          <MapPin className="w-4 h-4" />
-          <span className="line-clamp-1">{neighborhood}</span>
-        </div>
+        {/* AI reason */}
+        {aiReason && (
+          <div className="flex items-center gap-1.5 mt-2 text-xs text-ai-pulse">
+            <Sparkles className="w-3 h-3" />
+            <span>{aiReason}</span>
+          </div>
+        )}
       </div>
     </Link>
   );

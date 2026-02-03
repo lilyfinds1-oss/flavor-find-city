@@ -1,26 +1,60 @@
 import { Link } from "react-router-dom";
-import { Instagram, Twitter, Facebook, Mail } from "lucide-react";
+import { Instagram, Twitter, Zap, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const footerLinks = {
+  discover: [
+    { label: "Explore", href: "/explore" },
+    { label: "Top 100", href: "/top-100" },
+    { label: "Map", href: "/map" },
+    { label: "Deals", href: "/deals" },
+    { label: "Reviews", href: "/top-posts" },
+  ],
+  curated: [
+    { label: "Best Biryani", href: "/lists/biryani" },
+    { label: "Date Night", href: "/lists/date-night" },
+    { label: "Late Night", href: "/lists/late-night" },
+    { label: "Hidden Gems", href: "/lists/hidden-gems" },
+    { label: "Best BBQ", href: "/lists/bbq" },
+  ],
+  company: [
+    { label: "About", href: "/about" },
+    { label: "For Restaurants", href: "/for-restaurants" },
+    { label: "Careers", href: "/careers" },
+    { label: "Contact", href: "/contact" },
+  ],
+};
+
 export function Footer() {
   return (
-    <footer className="bg-charcoal text-cream">
+    <footer className="relative border-t border-border/30 bg-card">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50 pointer-events-none" />
+      
       {/* Newsletter Section */}
-      <div className="border-b border-white/10">
+      <div className="relative border-b border-border/30">
         <div className="container py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="font-display text-2xl font-bold mb-2">
-              Get the best food finds in your inbox
+          <div className="max-w-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-ai flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Stay updated
+              </span>
+            </div>
+            <h3 className="font-display text-2xl font-bold text-foreground mb-2">
+              Get the best food finds weekly
             </h3>
-            <p className="text-cream/70 mb-6">
-              Weekly trending restaurants, exclusive deals, and hidden gems.
+            <p className="text-muted-foreground mb-6">
+              Curated recommendations, trending spots, and exclusive deals.
             </p>
-            <form className="flex gap-2 max-w-md mx-auto">
+            <form className="flex gap-2">
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-white/10 border-white/20 text-cream placeholder:text-cream/50"
+                className="flex-1 bg-muted/50 border-border/50 focus:border-primary/50"
               />
               <Button variant="hero">Subscribe</Button>
             </form>
@@ -29,78 +63,98 @@ export function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="container py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="relative container py-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <span className="text-sm">🍽️</span>
+          <div className="col-span-2">
+            <Link to="/" className="flex items-center gap-2.5 mb-4 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-ai flex items-center justify-center shadow-lg shadow-primary/10">
+                <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="font-display font-bold text-lg">CityBites</span>
+              <span className="font-display font-bold text-xl text-foreground tracking-tight">
+                City<span className="gradient-text">Bites</span>
+              </span>
             </Link>
-            <p className="text-sm text-cream/60 mb-4">
-              Discover the best restaurants, earn rewards, and never eat boring food again.
+            <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+              AI-powered food discovery. Find your next favorite meal in Lahore.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="text-cream/60 hover:text-cream transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a 
+                href="#" 
+                className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="text-cream/60 hover:text-cream transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-cream/60 hover:text-cream transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-cream/60 hover:text-cream transition-colors">
-                <Mail className="w-5 h-5" />
+              <a 
+                href="#" 
+                className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <Twitter className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          {/* Explore */}
+          {/* Discover */}
           <div>
-            <h4 className="font-display font-semibold mb-4">Explore</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/explore" className="text-cream/60 hover:text-cream transition-colors">All Restaurants</Link></li>
-              <li><Link to="/top-100" className="text-cream/60 hover:text-cream transition-colors">Top 100</Link></li>
-              <li><Link to="/categories" className="text-cream/60 hover:text-cream transition-colors">Categories</Link></li>
-              <li><Link to="/map" className="text-cream/60 hover:text-cream transition-colors">Map View</Link></li>
-              <li><Link to="/deals" className="text-cream/60 hover:text-cream transition-colors">Deals & Coupons</Link></li>
+            <h4 className="font-display font-semibold text-foreground mb-4">Discover</h4>
+            <ul className="space-y-2.5">
+              {footerLinks.discover.map((link) => (
+                <li key={link.href}>
+                  <Link 
+                    to={link.href} 
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group"
+                  >
+                    {link.label}
+                    <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Top Lists */}
+          {/* Curated Lists */}
           <div>
-            <h4 className="font-display font-semibold mb-4">Top Lists</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/lists/steak" className="text-cream/60 hover:text-cream transition-colors">Best Steakhouses</Link></li>
-              <li><Link to="/lists/desi" className="text-cream/60 hover:text-cream transition-colors">Best Desi Food</Link></li>
-              <li><Link to="/lists/cafes" className="text-cream/60 hover:text-cream transition-colors">Best Cafes</Link></li>
-              <li><Link to="/lists/bbq" className="text-cream/60 hover:text-cream transition-colors">Best BBQ</Link></li>
-              <li><Link to="/lists/halal" className="text-cream/60 hover:text-cream transition-colors">Best Halal</Link></li>
+            <h4 className="font-display font-semibold text-foreground mb-4">Curated</h4>
+            <ul className="space-y-2.5">
+              {footerLinks.curated.map((link) => (
+                <li key={link.href}>
+                  <Link 
+                    to={link.href} 
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group"
+                  >
+                    {link.label}
+                    <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h4 className="font-display font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/about" className="text-cream/60 hover:text-cream transition-colors">About Us</Link></li>
-              <li><Link to="/blog" className="text-cream/60 hover:text-cream transition-colors">Blog</Link></li>
-              <li><Link to="/careers" className="text-cream/60 hover:text-cream transition-colors">Careers</Link></li>
-              <li><Link to="/contact" className="text-cream/60 hover:text-cream transition-colors">Contact</Link></li>
-              <li><Link to="/for-restaurants" className="text-cream/60 hover:text-cream transition-colors">For Restaurants</Link></li>
+            <h4 className="font-display font-semibold text-foreground mb-4">Company</h4>
+            <ul className="space-y-2.5">
+              {footerLinks.company.map((link) => (
+                <li key={link.href}>
+                  <Link 
+                    to={link.href} 
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group"
+                  >
+                    {link.label}
+                    <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-cream/50">
-          <p>© 2024 CityBites. All rights reserved.</p>
+        <div className="border-t border-border/30 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+          <p>© 2026 CityBites. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link to="/privacy" className="hover:text-cream transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-cream transition-colors">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
           </div>
         </div>
       </div>
