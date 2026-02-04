@@ -1,80 +1,48 @@
 import { Link } from "react-router-dom";
-import { Gift, Clock, Ticket, Sparkles } from "lucide-react";
+import { Gift, Clock, Ticket, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useDeals, useUserXP, useRedeemDeal } from "@/hooks/useDeals";
+import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow } from "date-fns";
 
-const deals = [
-  {
-    id: "1",
-    restaurant: "The Smokehouse BBQ",
-    restaurantSlug: "smokehouse-bbq",
-    title: "20% Off Your First Visit",
-    description: "Valid on all menu items. Dine-in only. Cannot be combined with other offers.",
-    discount: "20% OFF",
-    xpCost: 500,
-    expiresIn: "3 days",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
-  },
-  {
-    id: "2",
-    restaurant: "Sakura Sushi",
-    restaurantSlug: "sakura-sushi",
-    title: "Free Miso Soup",
-    description: "With any main dish purchase over $25. Valid for dine-in and takeout.",
-    discount: "FREE ITEM",
-    xpCost: 200,
-    expiresIn: "5 days",
-    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&h=300&fit=crop",
-  },
-  {
-    id: "3",
-    restaurant: "Spice Garden",
-    restaurantSlug: "spice-garden",
-    title: "Buy 1 Get 1 Free Biryani",
-    description: "On all biryani dishes. Weekdays only. Dine-in preferred.",
-    discount: "BOGO",
-    xpCost: 750,
-    expiresIn: "7 days",
-    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop",
-  },
-  {
-    id: "4",
-    restaurant: "Prime Steakhouse",
-    restaurantSlug: "prime-steakhouse",
-    title: "$50 Off $200+ Orders",
-    description: "Perfect for celebrations. Reservations required. Excludes alcohol.",
-    discount: "$50 OFF",
-    xpCost: 1500,
-    expiresIn: "14 days",
-    image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&h=300&fit=crop",
-  },
-  {
-    id: "5",
-    restaurant: "Chai & Toast Cafe",
-    restaurantSlug: "chai-toast-cafe",
-    title: "Free Pastry with Coffee",
-    description: "Any specialty coffee comes with a free pastry of your choice.",
-    discount: "FREE ITEM",
-    xpCost: 150,
-    expiresIn: "10 days",
-    image: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=400&h=300&fit=crop",
-  },
-  {
-    id: "6",
-    restaurant: "Seoul Kitchen",
-    restaurantSlug: "seoul-kitchen",
-    title: "15% Off Korean BBQ",
-    description: "Valid on all Korean BBQ sets for groups of 4 or more.",
-    discount: "15% OFF",
-    xpCost: 600,
-    expiresIn: "5 days",
-    image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&h=300&fit=crop",
-  },
-];
+const getDealBadge = (dealType: string, discountValue: number | null) => {
+  switch (dealType) {
+    case "percentage":
+      return `${discountValue}% OFF`;
+    case "fixed":
+      return `Rs. ${discountValue} OFF`;
+    case "bogo":
+      return "BOGO";
+    case "free_item":
+      return "FREE ITEM";
+    default:
+      return "DEAL";
+  }
+};
+
+const defaultImages: Record<string, string> = {
+  "The Smokehouse BBQ": "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
+  "Spice Garden": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop",
+  "Sakura Sushi": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&h=300&fit=crop",
+  "Mediterranean Grill": "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
+  "Nonna Rosa Trattoria": "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=400&h=300&fit=crop",
+  "Seoul Kitchen": "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&h=300&fit=crop",
+};
 
 export default function Deals() {
+  const { user } = useAuth();
+  const { data: deals, isLoading } = useDeals();
+  const { data: userXP = 0 } = useUserXP();
+  const redeemDeal = useRedeemDeal();
+
+  const handleRedeem = (dealId: string, xpCost: number) => {
+    if (!user) return;
+    redeemDeal.mutate({ dealId, xpCost });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -91,70 +59,115 @@ export default function Deals() {
               Deals & Coupons
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Use your XP points to unlock exclusive deals at top restaurants. Earn more by reviewing and voting!
+              Use your XP points to unlock exclusive deals at top restaurants in Lahore. Earn more by reviewing and voting!
             </p>
             <div className="mt-6 inline-flex items-center gap-2 bg-card rounded-full px-6 py-3 border border-border">
               <Ticket className="w-5 h-5 text-amber" />
               <span className="font-semibold">Your XP Balance:</span>
-              <span className="text-2xl font-display font-bold text-amber">0 XP</span>
-              <Link to="/auth">
-                <Button variant="gold" size="sm" className="ml-2">Sign in to earn</Button>
-              </Link>
+              <span className="text-2xl font-display font-bold text-amber">{userXP} XP</span>
+              {!user && (
+                <Link to="/auth">
+                  <Button variant="gold" size="sm" className="ml-2">Sign in to earn</Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
 
         {/* Deals Grid */}
         <div className="container py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
-            {deals.map((deal) => (
-              <div
-                key={deal.id}
-                className="group bg-card rounded-2xl border border-border/50 overflow-hidden card-hover"
-              >
-                {/* Image */}
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={deal.image}
-                    alt={deal.restaurant}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <Badge className="absolute top-3 left-3 bg-gradient-gold text-charcoal font-bold border-0 text-sm">
-                    {deal.discount}
-                  </Badge>
-                </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-card rounded-2xl h-80 animate-pulse" />
+              ))}
+            </div>
+          ) : deals && deals.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
+              {deals.map((deal) => {
+                const restaurantName = deal.restaurant?.name || "Restaurant";
+                const restaurantSlug = deal.restaurant?.slug || "";
+                const coverImage = deal.restaurant?.cover_image || defaultImages[restaurantName] || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop";
+                const canAfford = userXP >= (deal.xp_cost || 0);
+                const expiresIn = deal.expires_at 
+                  ? formatDistanceToNow(new Date(deal.expires_at), { addSuffix: false })
+                  : "soon";
 
-                {/* Content */}
-                <div className="p-5">
-                  <Link
-                    to={`/restaurant/${deal.restaurantSlug}`}
-                    className="text-sm text-primary font-medium hover:underline"
+                return (
+                  <div
+                    key={deal.id}
+                    className="group bg-card rounded-2xl border border-border/50 overflow-hidden card-hover"
                   >
-                    {deal.restaurant}
-                  </Link>
-                  <h3 className="font-display font-semibold text-lg mt-1">{deal.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{deal.description}</p>
+                    {/* Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={coverImage}
+                        alt={restaurantName}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <Badge className="absolute top-3 left-3 bg-gradient-gold text-charcoal font-bold border-0 text-sm">
+                        {getDealBadge(deal.deal_type, deal.discount_value)}
+                      </Badge>
+                    </div>
 
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="flex items-center gap-1 text-amber font-semibold">
-                        <Ticket className="w-4 h-4" />
-                        {deal.xpCost} XP
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        {deal.expiresIn}
+                    {/* Content */}
+                    <div className="p-5">
+                      <Link
+                        to={`/restaurant/${restaurantSlug}`}
+                        className="text-sm text-primary font-medium hover:underline"
+                      >
+                        {restaurantName}
+                      </Link>
+                      <h3 className="font-display font-semibold text-lg mt-1">{deal.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {deal.description || deal.terms}
+                      </p>
+
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                        <div className="flex items-center gap-3 text-sm">
+                          <div className="flex items-center gap-1 text-amber font-semibold">
+                            <Ticket className="w-4 h-4" />
+                            {deal.xp_cost} XP
+                          </div>
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            {expiresIn}
+                          </div>
+                        </div>
+                        {user ? (
+                          <Button 
+                            variant="gold" 
+                            size="sm"
+                            disabled={!canAfford || redeemDeal.isPending}
+                            onClick={() => handleRedeem(deal.id, deal.xp_cost || 0)}
+                          >
+                            {redeemDeal.isPending ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : canAfford ? (
+                              "Redeem"
+                            ) : (
+                              "Need more XP"
+                            )}
+                          </Button>
+                        ) : (
+                          <Link to="/auth">
+                            <Button variant="gold" size="sm">Sign in</Button>
+                          </Link>
+                        )}
                       </div>
                     </div>
-                    <Button variant="gold" size="sm">
-                      Redeem
-                    </Button>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <Gift className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h2 className="font-display text-xl font-semibold mb-2">No active deals</h2>
+              <p className="text-muted-foreground">Check back soon for exclusive offers!</p>
+            </div>
+          )}
         </div>
 
         {/* How it works */}
