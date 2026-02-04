@@ -66,7 +66,7 @@ export default function Explore() {
               Explore Restaurants
             </h1>
             <p className="text-muted-foreground">
-              Discover {restaurants?.length || 0}+ amazing places to eat in Toronto
+              Discover {restaurants?.length || 0}+ amazing places to eat in Lahore
             </p>
 
             {/* Search bar */}

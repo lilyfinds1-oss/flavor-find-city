@@ -30,7 +30,7 @@ export default function Top100() {
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
               Top 100 Restaurants
-              <span className="block text-primary">in Toronto</span>
+              <span className="block text-primary">in Lahore</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               The definitive ranking based on Google reviews, user votes, TikTok trends, and verified visits.

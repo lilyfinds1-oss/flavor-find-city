@@ -4,11 +4,107 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRestaurant } from "@/hooks/useRestaurants";
+import { useRestaurantReviews, useRefreshReviews } from "@/hooks/useRestaurantReviews";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { ReviewVoteButton } from "@/components/reviews/ReviewVoteButton";
+import { formatDistanceToNow } from "date-fns";
+
+function ReviewsSection({ restaurantId, restaurantName }: { restaurantId: string; restaurantName: string }) {
+  const { data: reviews, isLoading } = useRestaurantReviews(restaurantId);
+  const refreshReviews = useRefreshReviews(restaurantId);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-card rounded-xl border border-border p-6 animate-pulse">
+            <div className="h-4 bg-muted rounded w-1/3 mb-4" />
+            <div className="h-3 bg-muted rounded w-full mb-2" />
+            <div className="h-3 bg-muted rounded w-2/3" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Existing Reviews */}
+      {reviews && reviews.length > 0 ? (
+        <div className="space-y-4">
+          {reviews.map((review) => (
+            <div key={review.id} className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={review.profile?.avatar_url || undefined} />
+                    <AvatarFallback>
+                      {review.profile?.display_name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{review.profile?.display_name || "Anonymous"}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {review.created_at && formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-4 h-4 ${
+                        star <= review.rating
+                          ? "fill-primary text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {review.title && (
+                <h4 className="font-semibold mb-2">{review.title}</h4>
+              )}
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                {review.content}
+              </p>
+
+              <ReviewVoteButton
+                reviewId={review.id}
+                initialHelpfulVotes={review.helpful_votes || 0}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-card rounded-xl border border-border p-8 text-center">
+          <p className="text-muted-foreground mb-4">No reviews yet. Be the first to share your experience!</p>
+        </div>
+      )}
+
+      {/* Review Form */}
+      <ReviewForm
+        restaurantId={restaurantId}
+        restaurantName={restaurantName}
+        onSuccess={refreshReviews}
+      />
+    </div>
+  );
+}
 
 export default function RestaurantDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { data: restaurant, isLoading } = useRestaurant(slug || "");
+
+  const handleGetDirections = () => {
+    if (restaurant?.latitude && restaurant?.longitude) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${restaurant.latitude},${restaurant.longitude}`;
+      window.open(url, "_blank");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -74,7 +170,7 @@ export default function RestaurantDetail() {
             <div className="absolute bottom-4 left-4">
               <Badge className="bg-gradient-gold text-charcoal font-bold text-lg px-4 py-2">
                 <Award className="w-5 h-5 mr-2" />
-                #{restaurant.city_rank} in Toronto
+                #{restaurant.city_rank} in Lahore
               </Badge>
             </div>
           )}
@@ -157,18 +253,13 @@ export default function RestaurantDetail() {
                 </div>
               </div>
 
-              {/* Reviews Section Placeholder */}
+              {/* Reviews Section */}
               <div>
                 <h2 className="font-display text-xl font-semibold mb-4 flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary" />
-                  Reviews ({restaurant.total_reviews})
+                  Community Reviews
                 </h2>
-                <div className="bg-card rounded-xl border border-border p-8 text-center">
-                  <p className="text-muted-foreground mb-4">Be the first to write a review!</p>
-                  <Link to="/auth">
-                    <Button variant="hero">Write a Review</Button>
-                  </Link>
-                </div>
+                <ReviewsSection restaurantId={restaurant.id} restaurantName={restaurant.name} />
               </div>
             </div>
 
@@ -212,7 +303,12 @@ export default function RestaurantDetail() {
                 </div>
 
                 <div className="mt-6 space-y-3">
-                  <Button variant="hero" size="lg" className="w-full gap-2">
+                  <Button 
+                    variant="hero" 
+                    size="lg" 
+                    className="w-full gap-2"
+                    onClick={handleGetDirections}
+                  >
                     <Navigation className="w-4 h-4" />
                     Get Directions
                   </Button>
