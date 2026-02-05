@@ -4,19 +4,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-const topUsers = [
-  { rank: 1, name: "FoodieQueen", avatar: "👑", xp: 12500, reviews: 87, badge: "Legend" },
-  { rank: 2, name: "TasteExplorer", avatar: "🍕", xp: 10200, reviews: 72, badge: "Expert" },
-  { rank: 3, name: "SpiceMaster", avatar: "🌶️", xp: 8900, reviews: 65, badge: "Expert" },
-  { rank: 4, name: "BrunchLover", avatar: "🥞", xp: 7500, reviews: 58, badge: "Pro" },
-  { rank: 5, name: "SushiSensei", avatar: "🍣", xp: 6800, reviews: 52, badge: "Pro" },
-  { rank: 6, name: "BBQKing", avatar: "🍖", xp: 6200, reviews: 48, badge: "Pro" },
-  { rank: 7, name: "CafeHopper", avatar: "☕", xp: 5500, reviews: 43, badge: "Rising" },
-  { rank: 8, name: "StreetFoodFan", avatar: "🌮", xp: 4800, reviews: 38, badge: "Rising" },
-  { rank: 9, name: "DessertDiva", avatar: "🍰", xp: 4200, reviews: 34, badge: "Rising" },
-  { rank: 10, name: "VeganVoyager", avatar: "🥗", xp: 3900, reviews: 31, badge: "Active" },
-];
+ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+ import { useLeaderboard, getBadgeFromXP, getAvatarEmoji } from "@/hooks/useLeaderboard";
+ import { Loader2 } from "lucide-react";
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Crown className="w-6 h-6 text-amber" />;
@@ -35,6 +25,31 @@ const getBadgeColor = (badge: string) => {
 };
 
 export default function Leaderboard() {
+   const { data: users, isLoading } = useLeaderboard(20);
+ 
+   if (isLoading) {
+     return (
+       <div className="min-h-screen flex flex-col bg-background">
+         <Header />
+         <div className="flex-1 flex items-center justify-center">
+           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+         </div>
+         <Footer />
+       </div>
+     );
+   }
+ 
+   const topUsers = users?.map((user, index) => ({
+     rank: index + 1,
+     id: user.id,
+     name: user.display_name || user.username || "Anonymous",
+     avatar: user.avatar_url,
+     avatarEmoji: getAvatarEmoji(index),
+     xp: user.xp_points || 0,
+     reviews: user.total_reviews || 0,
+     badge: getBadgeFromXP(user.xp_points || 0),
+   })) || [];
+ 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -58,12 +73,20 @@ export default function Leaderboard() {
 
         {/* Top 3 Podium */}
         <div className="container py-8">
-          <div className="flex justify-center items-end gap-4 mb-12">
+           {topUsers.length >= 3 && (
+           <div className="flex justify-center items-end gap-4 mb-12">
             {/* 2nd Place */}
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-b from-gray-200 to-gray-400 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg">
-                {topUsers[1].avatar}
-              </div>
+               {topUsers[1].avatar ? (
+                 <Avatar className="w-20 h-20 mx-auto mb-3 shadow-lg">
+                   <AvatarImage src={topUsers[1].avatar} />
+                   <AvatarFallback className="text-4xl">{topUsers[1].avatarEmoji}</AvatarFallback>
+                 </Avatar>
+               ) : (
+                 <div className="w-20 h-20 rounded-full bg-gradient-to-b from-gray-200 to-gray-400 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg">
+                   {topUsers[1].avatarEmoji}
+                 </div>
+               )}
               <p className="font-display font-semibold">{topUsers[1].name}</p>
               <p className="text-sm text-muted-foreground">{topUsers[1].xp.toLocaleString()} XP</p>
               <div className="mt-2 h-24 w-24 bg-gray-300 rounded-t-lg flex items-center justify-center">
@@ -74,9 +97,16 @@ export default function Leaderboard() {
             {/* 1st Place */}
             <div className="text-center">
               <Crown className="w-8 h-8 text-amber mx-auto mb-2 animate-float" />
-              <div className="w-24 h-24 rounded-full bg-gradient-gold flex items-center justify-center text-5xl mx-auto mb-3 shadow-xl xp-glow">
-                {topUsers[0].avatar}
-              </div>
+               {topUsers[0].avatar ? (
+                 <Avatar className="w-24 h-24 mx-auto mb-3 shadow-xl xp-glow">
+                   <AvatarImage src={topUsers[0].avatar} />
+                   <AvatarFallback className="text-5xl bg-gradient-gold">{topUsers[0].avatarEmoji}</AvatarFallback>
+                 </Avatar>
+               ) : (
+                 <div className="w-24 h-24 rounded-full bg-gradient-gold flex items-center justify-center text-5xl mx-auto mb-3 shadow-xl xp-glow">
+                   {topUsers[0].avatarEmoji}
+                 </div>
+               )}
               <p className="font-display font-bold text-lg">{topUsers[0].name}</p>
               <p className="text-amber font-semibold">{topUsers[0].xp.toLocaleString()} XP</p>
               <div className="mt-2 h-32 w-28 bg-gradient-gold rounded-t-lg flex items-center justify-center">
@@ -86,9 +116,16 @@ export default function Leaderboard() {
 
             {/* 3rd Place */}
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-b from-orange-300 to-orange-500 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg">
-                {topUsers[2].avatar}
-              </div>
+               {topUsers[2].avatar ? (
+                 <Avatar className="w-20 h-20 mx-auto mb-3 shadow-lg">
+                   <AvatarImage src={topUsers[2].avatar} />
+                   <AvatarFallback className="text-4xl">{topUsers[2].avatarEmoji}</AvatarFallback>
+                 </Avatar>
+               ) : (
+                 <div className="w-20 h-20 rounded-full bg-gradient-to-b from-orange-300 to-orange-500 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg">
+                   {topUsers[2].avatarEmoji}
+                 </div>
+               )}
               <p className="font-display font-semibold">{topUsers[2].name}</p>
               <p className="text-sm text-muted-foreground">{topUsers[2].xp.toLocaleString()} XP</p>
               <div className="mt-2 h-20 w-24 bg-orange-400 rounded-t-lg flex items-center justify-center">
@@ -96,6 +133,7 @@ export default function Leaderboard() {
               </div>
             </div>
           </div>
+           )}
 
           {/* Full Leaderboard */}
           <div className="max-w-2xl mx-auto">
@@ -119,7 +157,14 @@ export default function Leaderboard() {
                   </div>
 
                   {/* Avatar */}
-                  <div className="text-3xl">{user.avatar}</div>
+                   {user.avatar ? (
+                     <Avatar className="w-10 h-10">
+                       <AvatarImage src={user.avatar} />
+                       <AvatarFallback>{user.avatarEmoji}</AvatarFallback>
+                     </Avatar>
+                   ) : (
+                     <div className="text-3xl">{user.avatarEmoji}</div>
+                   )}
 
                   {/* Info */}
                   <div className="flex-1">

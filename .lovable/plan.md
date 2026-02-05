@@ -32,8 +32,12 @@ All 20 restaurants updated with:
 - Reviews display with author avatars and voting
 
 ### 2.2 🔲 Implement Save to Favorites
-- Pending: Create `useSavedRestaurants.ts` hook
-- Pending: Update heart button in RestaurantDetail
+ ### 2.2 ✅ Implement Save to Favorites
+ - Created `useSavedRestaurants.ts` hook with:
+   - `useSavedRestaurants()` - Fetch user's saved restaurants
+   - `useIsSaved()` - Check if a restaurant is saved
+   - `useToggleSave()` - Toggle save/unsave with optimistic UI
+ - Integrated into RestaurantDetail page with filled heart for saved state
 
 ### 2.3 ✅ Implement Get Directions
 - Added `handleGetDirections` function
@@ -50,22 +54,30 @@ All 20 restaurants updated with:
 
 ## 🔲 Phase 3: Admin Tools — PENDING
 
-### 3.1 User Role Management Panel
-- Create `UserRoleManager.tsx` component
-- List profiles with current roles
-- Allow admins to add/remove writer role
+ ## ✅ Phase 3: Admin Tools — COMPLETE
 
-### 3.2 Deals Management Panel
-- Create `DealsManager.tsx` component
-- Form for creating/editing deals
+ ### 3.1 ✅ User Role Management Panel
+ - Created `UserRoleManager.tsx` component
+ - Lists profiles with current roles
+ - Allows admins to add/remove writer and moderator roles
+ - Search functionality included
+ 
+ ### 3.2 ✅ Deals Management Panel
+ - Created `DealsManager.tsx` component
+ - Full CRUD for deals with dialog form
+ - Linked to restaurants with selector
 
 ---
 
 ## 🔲 Phase 4: Dynamic Data — PENDING
 
-### 4.1 Real Leaderboard
-- Create `useLeaderboard.ts` hook
-- Query profiles ordered by xp_points DESC
+ ## ✅ Phase 4: Dynamic Data — COMPLETE
+ 
+ ### 4.1 ✅ Real Leaderboard
+ - Created `useLeaderboard.ts` hook
+ - Queries profiles ordered by xp_points DESC
+ - Dynamic badge assignment based on XP thresholds
+ - Supports user avatars with fallback emojis
 
 ---
 
@@ -94,6 +106,10 @@ The critical path is complete:
 3. ✅ City references updated to Lahore
 4. ✅ Deals page connected to real database
 5. ✅ Get Directions works
+ 6. ✅ Save to Favorites works
+ 7. ✅ Admin User Role Manager implemented
+ 8. ✅ Admin Deals Manager implemented
+ 9. ✅ Real Leaderboard with database data
 
 **Ready for initial testing!**
 
@@ -103,8 +119,4 @@ The critical path is complete:
 
 | Feature | Priority | Effort |
 |---------|----------|--------|
-| Favorites/Save | Medium | ~1 hour |
-| User Role Manager | Medium | ~2 hours |
-| Deals Manager | Medium | ~2 hours |
-| Real Leaderboard | Low | ~30 min |
 | Email Verification UX | Low | ~1 hour |
