@@ -1,5 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import { Star, MapPin, Phone, Globe, Clock, Heart, Share2, Navigation, ChevronLeft, Award, Users, Utensils, CheckCircle } from "lucide-react";
+ import { Star, MapPin, Phone, Globe, Clock, Heart, Share2, Navigation, ChevronLeft, Award, Users, Utensils, CheckCircle } from "lucide-react";
+ import { useIsSaved, useToggleSave } from "@/hooks/useSavedRestaurants";
+ import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,58 @@ import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewVoteButton } from "@/components/reviews/ReviewVoteButton";
 import { formatDistanceToNow } from "date-fns";
 
+ function SaveButton({ restaurantId }: { restaurantId: string }) {
+   const { user } = useAuth();
+   const { data: isSaved } = useIsSaved(restaurantId);
+   const toggleSave = useToggleSave();
+ 
+   const handleSave = () => {
+     if (!user) {
+       window.location.href = "/auth";
+       return;
+     }
+     toggleSave.mutate({ restaurantId, isSaved: !!isSaved });
+   };
+ 
+   return (
+     <Button 
+       variant="glass" 
+       size="icon" 
+       onClick={handleSave}
+       disabled={toggleSave.isPending}
+     >
+       <Heart className={`w-5 h-5 ${isSaved ? "fill-primary text-primary" : ""}`} />
+     </Button>
+   );
+ }
+ 
+ function SidebarSaveButton({ restaurantId }: { restaurantId: string }) {
+   const { user } = useAuth();
+   const { data: isSaved } = useIsSaved(restaurantId);
+   const toggleSave = useToggleSave();
+ 
+   const handleSave = () => {
+     if (!user) {
+       window.location.href = "/auth";
+       return;
+     }
+     toggleSave.mutate({ restaurantId, isSaved: !!isSaved });
+   };
+ 
+   return (
+     <Button 
+       variant="outline" 
+       size="lg" 
+       className="w-full gap-2"
+       onClick={handleSave}
+       disabled={toggleSave.isPending}
+     >
+       <Heart className={`w-4 h-4 ${isSaved ? "fill-primary text-primary" : ""}`} />
+       {isSaved ? "Saved to Favorites" : "Save to Favorites"}
+     </Button>
+   );
+ }
+ 
 function ReviewsSection({ restaurantId, restaurantName }: { restaurantId: string; restaurantName: string }) {
   const { data: reviews, isLoading } = useRestaurantReviews(restaurantId);
   const refreshReviews = useRefreshReviews(restaurantId);
@@ -157,9 +211,7 @@ export default function RestaurantDetail() {
 
           {/* Action buttons */}
           <div className="absolute top-4 right-4 flex gap-2">
-            <Button variant="glass" size="icon">
-              <Heart className="w-5 h-5" />
-            </Button>
+             <SaveButton restaurantId={restaurant.id} />
             <Button variant="glass" size="icon">
               <Share2 className="w-5 h-5" />
             </Button>
@@ -312,10 +364,7 @@ export default function RestaurantDetail() {
                     <Navigation className="w-4 h-4" />
                     Get Directions
                   </Button>
-                  <Button variant="outline" size="lg" className="w-full gap-2">
-                    <Heart className="w-4 h-4" />
-                    Save to Favorites
-                  </Button>
+                   <SidebarSaveButton restaurantId={restaurant.id} />
                 </div>
               </div>
             </div>
