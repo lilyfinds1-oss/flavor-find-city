@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AIPromptHero } from "@/components/discover/AIPromptHero";
 import { LiveTrendingBar } from "@/components/discover/LiveTrendingBar";
 import { DiscoveryFeed } from "@/components/discover/DiscoveryFeed";
+import { RecentReviewsSection } from "@/components/home/RecentReviewsSection";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +24,7 @@ const Index = () => {
       <main className="flex-1">
         <AIPromptHero onSearch={handleSearch} />
         <LiveTrendingBar />
+        <RecentReviewsSection />
         <div id="discovery-feed">
           <DiscoveryFeed searchQuery={searchQuery} />
         </div>
