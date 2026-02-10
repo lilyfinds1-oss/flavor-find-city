@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,7 @@ const navLinks = [
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
   const { user, loading, isAdmin, signOut } = useAuth();
 
@@ -85,9 +88,17 @@ export function Header() {
           </Link>
 
           {/* Search */}
-          <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => setSearchOpen(true)}
+          >
             <Search className="w-4 h-4" />
           </Button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Location */}
           <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5 text-muted-foreground hover:text-foreground">
@@ -234,6 +245,8 @@ export function Header() {
           </nav>
         </div>
       )}
+      {/* Global Search Modal */}
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
