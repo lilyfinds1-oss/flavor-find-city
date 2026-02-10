@@ -12,6 +12,7 @@ import { useRestaurantReviews, useRefreshReviews } from "@/hooks/useRestaurantRe
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewVoteButton } from "@/components/reviews/ReviewVoteButton";
 import { formatDistanceToNow } from "date-fns";
+import { SEOHead } from "@/components/seo/SEOHead";
 
  function SaveButton({ restaurantId }: { restaurantId: string }) {
    const { user } = useAuth();
@@ -188,8 +189,35 @@ export default function RestaurantDetail() {
     );
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    name: restaurant.name,
+    description: restaurant.description,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: restaurant.address,
+      addressLocality: restaurant.city,
+      addressCountry: "PK",
+    },
+    ...(restaurant.average_rating && { aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: Number(restaurant.average_rating).toFixed(1),
+      reviewCount: restaurant.total_reviews || 0,
+    }}),
+    ...(restaurant.cuisines && { servesCuisine: restaurant.cuisines.map(c => c.replace("_", " ")) }),
+    ...(restaurant.price_range && { priceRange: restaurant.price_range }),
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead
+        title={restaurant.name}
+        description={restaurant.description || `Discover ${restaurant.name} in ${restaurant.neighborhood || restaurant.city}. Read reviews, view menu, and get directions.`}
+        image={restaurant.cover_image || undefined}
+        type="restaurant"
+        jsonLd={jsonLd}
+      />
       <Header />
       
       <main className="flex-1">

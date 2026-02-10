@@ -9,6 +9,7 @@ import { TopRatedSection } from "@/components/home/TopRatedSection";
 import { TrendingNowSection } from "@/components/home/TrendingNowSection";
 import { DealsSection } from "@/components/home/DealsSection";
 import { NeighborhoodsSection } from "@/components/home/NeighborhoodsSection";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +25,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead />
       <Header />
       <main className="flex-1">
         <AIPromptHero onSearch={handleSearch} />
