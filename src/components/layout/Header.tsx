@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ const navLinks = [
   { href: "/deals", label: "Deals" },
   { href: "/map", label: "Map" },
   { href: "/top-posts", label: "Reviews" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export function Header() {
@@ -96,6 +98,9 @@ export function Header() {
           >
             <Search className="w-4 h-4" />
           </Button>
+
+          {/* Notifications */}
+          <NotificationBell />
 
           {/* Theme Toggle */}
           <ThemeToggle />
