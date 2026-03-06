@@ -282,7 +282,10 @@ export type Database = {
           id: string
           is_verified_foodie: boolean | null
           location: string | null
+          referral_code: string | null
+          referred_by: string | null
           total_photos: number | null
+          total_referrals: number | null
           total_reviews: number | null
           total_votes: number | null
           updated_at: string | null
@@ -297,7 +300,10 @@ export type Database = {
           id: string
           is_verified_foodie?: boolean | null
           location?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           total_photos?: number | null
+          total_referrals?: number | null
           total_reviews?: number | null
           total_votes?: number | null
           updated_at?: string | null
@@ -312,12 +318,39 @@ export type Database = {
           id?: string
           is_verified_foodie?: boolean | null
           location?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           total_photos?: number | null
+          total_referrals?: number | null
           total_reviews?: number | null
           total_votes?: number | null
           updated_at?: string | null
           username?: string | null
           xp_points?: number | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string | null
+          id: string
+          referred_id: string
+          referrer_id: string
+          xp_awarded: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referred_id: string
+          referrer_id: string
+          xp_awarded?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          xp_awarded?: boolean | null
         }
         Relationships: []
       }
@@ -344,6 +377,50 @@ export type Database = {
           },
           {
             foreignKeyName: "restaurant_categories_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurant_claims: {
+        Row: {
+          admin_notes: string | null
+          business_email: string
+          created_at: string | null
+          id: string
+          proof_description: string | null
+          restaurant_id: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_email: string
+          created_at?: string | null
+          id?: string
+          proof_description?: string | null
+          restaurant_id: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_email?: string
+          created_at?: string | null
+          id?: string
+          proof_description?: string | null
+          restaurant_id?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_claims_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
             referencedRelation: "restaurants"
