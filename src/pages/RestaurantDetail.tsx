@@ -140,7 +140,7 @@ function ReviewsSection({ restaurantId, restaurantName }: { restaurantId: string
                     />
                   ))}
                 </div>
-              )
+              )}
 
               <ReviewVoteButton
                 reviewId={review.id}
