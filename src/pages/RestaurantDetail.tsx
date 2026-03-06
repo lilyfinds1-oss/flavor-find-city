@@ -127,6 +127,21 @@ function ReviewsSection({ restaurantId, restaurantName }: { restaurantId: string
                 {review.content}
               </p>
 
+              {/* Review Photos */}
+              {review.photos && review.photos.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {review.photos.map((photo: string, i: number) => (
+                    <img
+                      key={i}
+                      src={photo}
+                      alt={`Review photo ${i + 1}`}
+                      className="w-24 h-24 rounded-lg object-cover border border-border hover:scale-105 transition-transform cursor-pointer"
+                      onClick={() => window.open(photo, "_blank")}
+                    />
+                  ))}
+                </div>
+              )}
+
               <ReviewVoteButton
                 reviewId={review.id}
                 initialHelpfulVotes={review.helpful_votes || 0}
