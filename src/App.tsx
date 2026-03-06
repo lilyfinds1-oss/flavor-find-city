@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import TopPosts from "./pages/TopPosts";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ function AnimatedRoutes() {
         <Route path="/top-posts" element={<TopPosts />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/install" element={<Install />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
