@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, Save, User, Star, MessageSquare, Award, Loader2 } from "lucide-react";
+import { ReferralSection } from "@/components/profile/ReferralSection";
 
 interface Profile {
   id: string;
@@ -306,6 +307,11 @@ export default function ProfilePage() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Referral Section */}
+          <div className="md:col-span-3">
+            <ReferralSection />
+          </div>
         </div>
       </main>
 

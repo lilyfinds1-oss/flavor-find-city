@@ -11,6 +11,7 @@ import { useRestaurant } from "@/hooks/useRestaurants";
 import { useRestaurantReviews, useRefreshReviews } from "@/hooks/useRestaurantReviews";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewVoteButton } from "@/components/reviews/ReviewVoteButton";
+import { ClaimRestaurant } from "@/components/restaurant/ClaimRestaurant";
 import { formatDistanceToNow } from "date-fns";
 import { SEOHead } from "@/components/seo/SEOHead";
 
@@ -408,6 +409,7 @@ export default function RestaurantDetail() {
                     Get Directions
                   </Button>
                    <SidebarSaveButton restaurantId={restaurant.id} />
+                  <ClaimRestaurant restaurantId={restaurant.id} restaurantName={restaurant.name} />
                 </div>
               </div>
             </div>

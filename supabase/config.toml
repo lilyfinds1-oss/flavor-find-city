@@ -2,3 +2,6 @@ project_id = "ypcsinlgsmrlnidsparm"
 
 [functions.food-assistant]
 verify_jwt = false
+
+[functions.weekly-digest]
+verify_jwt = false
