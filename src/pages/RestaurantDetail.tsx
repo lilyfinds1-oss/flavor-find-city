@@ -411,6 +411,7 @@ export default function RestaurantDetail() {
                    <SidebarSaveButton restaurantId={restaurant.id} />
                   <ClaimRestaurant restaurantId={restaurant.id} restaurantName={restaurant.name} />
                 </div>
+              </div>
             </div>
           </div>
         </div>
