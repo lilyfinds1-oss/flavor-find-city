@@ -8,9 +8,10 @@ import AdminOverview from "@/components/admin/AdminOverview";
 import RestaurantManager from "@/components/admin/RestaurantManager";
 import ReviewModerator from "@/components/admin/ReviewModerator";
 import SettingsPanel from "@/components/admin/SettingsPanel";
- import UserRoleManager from "@/components/admin/UserRoleManager";
- import DealsManager from "@/components/admin/DealsManager";
- import { Shield, Store, MessageSquare, BarChart3, Settings, Users, Ticket } from "lucide-react";
+import UserRoleManager from "@/components/admin/UserRoleManager";
+import DealsManager from "@/components/admin/DealsManager";
+import ClaimsManager from "@/components/admin/ClaimsManager";
+import { Shield, Store, MessageSquare, BarChart3, Settings, Users, Ticket, Building2 } from "lucide-react";
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth();
@@ -50,7 +51,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-           <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -63,14 +64,18 @@ export default function Admin() {
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Reviews</span>
             </TabsTrigger>
-             <TabsTrigger value="users" className="gap-2">
-               <Users className="w-4 h-4" />
-               <span className="hidden sm:inline">Users</span>
-             </TabsTrigger>
-             <TabsTrigger value="deals" className="gap-2">
-               <Ticket className="w-4 h-4" />
-               <span className="hidden sm:inline">Deals</span>
-             </TabsTrigger>
+            <TabsTrigger value="claims" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Claims</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="deals" className="gap-2">
+              <Ticket className="w-4 h-4" />
+              <span className="hidden sm:inline">Deals</span>
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
@@ -89,14 +94,18 @@ export default function Admin() {
             <ReviewModerator />
           </TabsContent>
 
-           <TabsContent value="users">
-             <UserRoleManager />
-           </TabsContent>
- 
-           <TabsContent value="deals">
-             <DealsManager />
-           </TabsContent>
- 
+          <TabsContent value="claims">
+            <ClaimsManager />
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserRoleManager />
+          </TabsContent>
+
+          <TabsContent value="deals">
+            <DealsManager />
+          </TabsContent>
+
           <TabsContent value="settings">
             <SettingsPanel />
           </TabsContent>
