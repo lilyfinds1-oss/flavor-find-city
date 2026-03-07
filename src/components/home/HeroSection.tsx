@@ -28,7 +28,7 @@ export function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-slide-in-bottom">
             <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-medium">500+ restaurants ranked in Toronto</span>
+            <span className="text-sm font-medium">500+ restaurants ranked in Lahore</span>
           </div>
 
           {/* Headline */}
@@ -58,7 +58,7 @@ export function HeroSection() {
               </div>
               <Button variant="glass" size="lg" className="hidden sm:flex gap-2">
                 <MapPin className="w-4 h-4" />
-                Toronto
+                Lahore
               </Button>
               <Button variant="hero" size="lg">
                 Search
