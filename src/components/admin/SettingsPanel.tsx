@@ -277,6 +277,8 @@ function AIModelSettings() {
 export default function SettingsPanel() {
   const { data: mapboxToken } = useAppConfig("mapbox_public_token");
   const { data: geminiToken } = useAppConfig("gemini_api_key" as any);
+  const { data: stripeSecretKey } = useAppConfig("stripe_secret_key" as any);
+  const { data: stripePublishableKey } = useAppConfig("stripe_publishable_key" as any);
   const [generatingEmbeddings, setGeneratingEmbeddings] = useState(false);
   const [embeddingResult, setEmbeddingResult] = useState<string | null>(null);
 
@@ -299,6 +301,8 @@ export default function SettingsPanel() {
     }
   };
 
+  const isStripeConfigured = !!stripeSecretKey && stripeSecretKey.length > 0;
+
   const integrations = [
     {
       label: "Mapbox GL",
@@ -311,6 +315,12 @@ export default function SettingsPanel() {
       description: "AI search, vision, moderation & recommendations",
       icon: Brain,
       configured: !!geminiToken && geminiToken.length > 0,
+    },
+    {
+      label: "Stripe",
+      description: "Payments & subscriptions for restaurant plans",
+      icon: CreditCard,
+      configured: isStripeConfigured,
     },
   ];
 
