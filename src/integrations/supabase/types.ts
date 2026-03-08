@@ -460,6 +460,7 @@ export type Database = {
       restaurants: {
         Row: {
           address: string
+          ambience: string | null
           average_rating: number | null
           city: string
           city_rank: number | null
@@ -467,6 +468,7 @@ export type Database = {
           created_at: string | null
           cuisines: Database["public"]["Enums"]["cuisine_type"][] | null
           description: string | null
+          embedding: string | null
           facebook_popularity: number | null
           google_rating: number | null
           google_review_count: number | null
@@ -491,10 +493,13 @@ export type Database = {
           neighborhood: string | null
           phone: string | null
           photos: string[] | null
+          popular_dishes: string[] | null
           price_range: Database["public"]["Enums"]["price_range"] | null
           ranking_score: number | null
+          short_description: string | null
           signature_dishes: string[] | null
           slug: string
+          tags: string[] | null
           tiktok: string | null
           tiktok_trend_score: number | null
           total_reviews: number | null
@@ -503,6 +508,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          ambience?: string | null
           average_rating?: number | null
           city?: string
           city_rank?: number | null
@@ -510,6 +516,7 @@ export type Database = {
           created_at?: string | null
           cuisines?: Database["public"]["Enums"]["cuisine_type"][] | null
           description?: string | null
+          embedding?: string | null
           facebook_popularity?: number | null
           google_rating?: number | null
           google_review_count?: number | null
@@ -534,10 +541,13 @@ export type Database = {
           neighborhood?: string | null
           phone?: string | null
           photos?: string[] | null
+          popular_dishes?: string[] | null
           price_range?: Database["public"]["Enums"]["price_range"] | null
           ranking_score?: number | null
+          short_description?: string | null
           signature_dishes?: string[] | null
           slug: string
+          tags?: string[] | null
           tiktok?: string | null
           tiktok_trend_score?: number | null
           total_reviews?: number | null
@@ -546,6 +556,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          ambience?: string | null
           average_rating?: number | null
           city?: string
           city_rank?: number | null
@@ -553,6 +564,7 @@ export type Database = {
           created_at?: string | null
           cuisines?: Database["public"]["Enums"]["cuisine_type"][] | null
           description?: string | null
+          embedding?: string | null
           facebook_popularity?: number | null
           google_rating?: number | null
           google_review_count?: number | null
@@ -577,10 +589,13 @@ export type Database = {
           neighborhood?: string | null
           phone?: string | null
           photos?: string[] | null
+          popular_dishes?: string[] | null
           price_range?: Database["public"]["Enums"]["price_range"] | null
           ranking_score?: number | null
+          short_description?: string | null
           signature_dishes?: string[] | null
           slug?: string
+          tags?: string[] | null
           tiktok?: string | null
           tiktok_trend_score?: number | null
           total_reviews?: number | null
@@ -623,8 +638,11 @@ export type Database = {
       }
       reviews: {
         Row: {
+          ai_moderation_category: string | null
           ai_moderation_notes: string | null
           ai_quality_score: number | null
+          ai_spam_score: number | null
+          ai_toxic_score: number | null
           content: string
           created_at: string | null
           helpful_votes: number | null
@@ -641,8 +659,11 @@ export type Database = {
           xp_earned: number | null
         }
         Insert: {
+          ai_moderation_category?: string | null
           ai_moderation_notes?: string | null
           ai_quality_score?: number | null
+          ai_spam_score?: number | null
+          ai_toxic_score?: number | null
           content: string
           created_at?: string | null
           helpful_votes?: number | null
@@ -659,8 +680,11 @@ export type Database = {
           xp_earned?: number | null
         }
         Update: {
+          ai_moderation_category?: string | null
           ai_moderation_notes?: string | null
           ai_quality_score?: number | null
+          ai_spam_score?: number | null
+          ai_toxic_score?: number | null
           content?: string
           created_at?: string | null
           helpful_votes?: number | null
@@ -781,6 +805,33 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_restaurants: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          ambience: string
+          average_rating: number
+          cover_image: string
+          cuisines: Database["public"]["Enums"]["cuisine_type"][]
+          description: string
+          has_delivery: boolean
+          id: string
+          is_halal: boolean
+          name: string
+          neighborhood: string
+          popular_dishes: string[]
+          price_range: Database["public"]["Enums"]["price_range"]
+          short_description: string
+          signature_dishes: string[]
+          similarity: number
+          slug: string
+          tags: string[]
+          total_reviews: number
+        }[]
       }
     }
     Enums: {
