@@ -42,11 +42,9 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const ai = await createAIProvider();
-
     const topic = SEARCH_TOPICS[Math.floor(Math.random() * SEARCH_TOPICS.length)];
     console.log("Generating blog for topic:", topic);
 
-    // Fetch restaurants with structured data for better content
     const { data: restaurants } = await supabase
       .from("restaurants")
       .select("name, slug, address, neighborhood, cuisines, average_rating, google_rating, google_review_count, description, short_description, signature_dishes, popular_dishes, price_range, cover_image, is_halal, has_delivery, ambience, tags")
@@ -56,52 +54,39 @@ Deno.serve(async (req) => {
 
     const restaurantContext = (restaurants || [])
       .map(
-        (r, i) =>
+        (r: any, i: number) =>
           `${i + 1}. ${r.name} — ${r.neighborhood || "Lahore"}, Rating: ${r.google_rating || r.average_rating}/5 (${r.google_review_count || 0} reviews), Price: ${r.price_range}, Cuisines: ${(r.cuisines || []).join(", ")}, Signature Dishes: ${(r.signature_dishes || []).join(", ")}, Popular Dishes: ${(r.popular_dishes || []).join(", ")}, Ambience: ${r.ambience || "N/A"}, Tags: ${(r.tags || []).join(", ")}, Halal: ${r.is_halal ? "Yes" : "No"}, Delivery: ${r.has_delivery ? "Yes" : "No"}${r.short_description ? `, About: ${r.short_description}` : r.description ? `, About: ${r.description.slice(0, 150)}` : ""}`
       )
       .join("\n");
 
     const aiData = await ai.chatCompletion({
-      model: "gpt-4o-mini",
       temperature: 0.8,
       messages: [
         {
           role: "system",
-          content: `You are a food blogger for CityBites, an AI-powered restaurant discovery platform in Lahore, Pakistan. Write engaging, SEO-optimized blog posts.
-
-Your style: Conversational, enthusiastic, helpful. Use Pakistani food terminology naturally. Include practical info (prices, areas, best dishes, ambience).
-
-Always respond with valid JSON:
-{
-  "title": "SEO-friendly title under 60 chars",
-  "excerpt": "Meta description under 155 chars",
-  "content": "Full markdown blog post, 800-1200 words with H2/H3 headings, intro, numbered restaurant list, and conclusion with CTA",
-  "tags": ["tag1", "tag2", "tag3"]
-}`,
+          content: `You are a food blogger for CityBites, an AI-powered restaurant discovery platform in Lahore, Pakistan. Write engaging, SEO-optimized blog posts. Your style: Conversational, enthusiastic, helpful. Use Pakistani food terminology naturally. Include practical info (prices, areas, best dishes, ambience).`,
         },
         {
           role: "user",
           content: `Write about: "${topic}"\n\nRestaurant data:\n${restaurantContext || "No specific restaurants found, write general recommendations."}\n\nRequirements:\n- SEO-optimized for "${topic}"\n- 5-7 restaurants with reviews including ambience, must-try dishes, price range\n- End with CTA to explore CityBites\n- Markdown formatting`,
         },
       ],
+      responseSchema: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          excerpt: { type: "string" },
+          content: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+        },
+        required: ["title", "excerpt", "content", "tags"],
+      },
     });
 
-    const rawContent = aiData.choices?.[0]?.message?.content;
-    if (!rawContent) throw new Error("No content from AI");
+    const result = aiData.parsed;
+    if (!result?.title) throw new Error("AI failed to generate blog post");
 
-    let blogData;
-    try {
-      const cleaned = rawContent.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      blogData = JSON.parse(cleaned);
-    } catch {
-      console.error("Failed to parse AI response:", rawContent);
-      throw new Error("Failed to parse AI response as JSON");
-    }
-
-    const { title, excerpt, content, tags } = blogData;
-    if (!title || !content) throw new Error("Missing title or content");
-
-    const slug = slugify(title) + "-" + Date.now().toString(36);
+    const slug = slugify(result.title) + "-" + Date.now().toString(36);
 
     const { data: adminRole } = await supabase
       .from("user_roles")
@@ -117,8 +102,8 @@ Always respond with valid JSON:
     const { data: post, error: insertError } = await supabase
       .from("blog_posts")
       .insert({
-        title, slug, excerpt: excerpt || null, content,
-        tags: tags || [], cover_image: coverImage,
+        title: result.title, slug, excerpt: result.excerpt || null, content: result.content,
+        tags: result.tags || [], cover_image: coverImage,
         author_id: adminRole.user_id,
         status: "published", published_at: new Date().toISOString(),
       })
@@ -127,8 +112,8 @@ Always respond with valid JSON:
 
     if (insertError) throw insertError;
 
-    console.log("Blog post created:", post.id, title);
-    return new Response(JSON.stringify({ success: true, post: { id: post.id, title, slug } }), {
+    console.log("Blog post created:", post.id, result.title);
+    return new Response(JSON.stringify({ success: true, post: { id: post.id, title: result.title, slug } }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
