@@ -61,15 +61,12 @@ const LOVABLE_MODEL_MAP: Record<string, string> = {
 
 export async function createAIProvider(): Promise<AIProvider> {
   const openaiKey = await getOpenAIKey();
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
 
-  if (openaiKey) {
-    return createOpenAIProvider(openaiKey);
+  if (!openaiKey) {
+    throw new Error("OpenAI API key not configured. Add it in Admin → Settings → OpenAI Configuration.");
   }
-  if (lovableKey) {
-    return createLovableProvider(lovableKey);
-  }
-  throw new Error("No AI provider configured. Add an OpenAI API key in Admin → Settings.");
+
+  return createOpenAIProvider(openaiKey);
 }
 
 function createOpenAIProvider(apiKey: string): AIProvider {
