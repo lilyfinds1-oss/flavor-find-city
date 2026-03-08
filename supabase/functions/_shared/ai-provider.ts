@@ -52,24 +52,20 @@ async function getOpenAIKey(): Promise<string | null> {
   return cachedOpenAIKey;
 }
 
-// Model mapping from OpenAI to Lovable gateway equivalents
-const LOVABLE_MODEL_MAP: Record<string, string> = {
-  "gpt-4o-mini": "google/gemini-2.5-flash",
-  "gpt-4o": "google/gemini-2.5-pro",
-  "gpt-4": "google/gemini-2.5-pro",
+// Model mapping kept for future provider abstraction
+const _OPENAI_MODELS = {
+  chat: "gpt-4o-mini",
+  embedding: "text-embedding-3-small",
 };
 
 export async function createAIProvider(): Promise<AIProvider> {
   const openaiKey = await getOpenAIKey();
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
 
-  if (openaiKey) {
-    return createOpenAIProvider(openaiKey);
+  if (!openaiKey) {
+    throw new Error("OpenAI API key not configured. Add it in Admin → Settings → OpenAI Configuration.");
   }
-  if (lovableKey) {
-    return createLovableProvider(lovableKey);
-  }
-  throw new Error("No AI provider configured. Add an OpenAI API key in Admin → Settings.");
+
+  return createOpenAIProvider(openaiKey);
 }
 
 function createOpenAIProvider(apiKey: string): AIProvider {
@@ -124,45 +120,6 @@ function createOpenAIProvider(apiKey: string): AIProvider {
   };
 }
 
-function createLovableProvider(apiKey: string): AIProvider {
-  return {
-    async chatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResponse> {
-      // Map OpenAI model names to Lovable gateway models
-      const model = LOVABLE_MODEL_MAP[params.model || "gpt-4o-mini"] || "google/gemini-2.5-flash";
-
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: params.messages,
-          tools: params.tools,
-          tool_choice: params.tool_choice,
-          temperature: params.temperature,
-        }),
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        if (response.status === 429) throw new AIError("Rate limited", 429);
-        if (response.status === 402) throw new AIError("AI credits exhausted", 402);
-        throw new AIError(`AI gateway error: ${response.status} ${errText}`, response.status);
-      }
-
-      return response.json();
-    },
-
-    async generateEmbedding(_text: string): Promise<number[]> {
-      throw new AIError(
-        "Embeddings require an OpenAI API key. Please add one in Admin → Settings.",
-        400
-      );
-    },
-  };
-}
 
 export class AIError extends Error {
   status: number;
