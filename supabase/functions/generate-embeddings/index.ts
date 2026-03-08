@@ -45,7 +45,7 @@ serve(async (req) => {
 
           const { error: updateError } = await supabase
             .from("restaurants")
-            .update({ embedding: JSON.stringify(embedding) })
+            .update({ embedding: `[${embedding.join(",")}]` })
             .eq("id", r.id);
 
           if (updateError) {
@@ -96,7 +96,7 @@ serve(async (req) => {
 
     const { error: updateError } = await supabase
       .from("restaurants")
-      .update({ embedding: JSON.stringify(embedding) })
+      .update({ embedding: `[${embedding.join(",")}]` })
       .eq("id", restaurantId);
 
     if (updateError) throw updateError;

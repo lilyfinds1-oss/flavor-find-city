@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_cache: {
+        Row: {
+          cache_key: string
+          cache_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          response: Json
+        }
+        Insert: {
+          cache_key: string
+          cache_type: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          response: Json
+        }
+        Update: {
+          cache_key?: string
+          cache_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          response?: Json
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           created_at: string
