@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const CACHE_TTL_SECONDS = 600; // 10 minutes
+const CACHE_TTL_SECONDS = 600;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -19,14 +19,12 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { query } = await req.json();
-
     if (!query?.trim()) {
       return new Response(JSON.stringify({ results: [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check cache first
     const cacheKey = `search:${query.trim().toLowerCase()}`;
     const cached = await getCached(supabase, cacheKey);
     if (cached) {
@@ -36,11 +34,10 @@ serve(async (req) => {
     }
 
     const ai = await createAIProvider();
-
     let candidates: any[] = [];
     let usedVector = false;
 
-    // Stage 1: Try vector similarity search
+    // Stage 1: Vector similarity search
     try {
       const queryEmbedding = await ai.generateEmbedding(query);
       const { data: vectorResults, error: vecError } = await supabase.rpc("match_restaurants", {
@@ -48,7 +45,6 @@ serve(async (req) => {
         match_threshold: 0.25,
         match_count: 15,
       });
-
       if (!vecError && vectorResults?.length > 0) {
         candidates = vectorResults;
         usedVector = true;
@@ -79,7 +75,7 @@ serve(async (req) => {
       });
     }
 
-    // Stage 2: LLM re-ranking
+    // Stage 2: Gemini re-ranking
     const candidateContext = candidates.slice(0, 15).map((r: any) => ({
       id: r.id, name: r.name, neighborhood: r.neighborhood,
       cuisines: r.cuisines, price_range: r.price_range,
@@ -90,55 +86,36 @@ serve(async (req) => {
     }));
 
     const aiData = await ai.chatCompletion({
-      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are a semantic search engine for restaurants in Lahore, Pakistan. Given a natural language query and pre-filtered restaurant candidates, rank them by relevance. For each match, provide a short reason (max 10 words). Return at most 10 results.`,
+          content: `You are a semantic search engine for restaurants in Lahore, Pakistan. Given a natural language query and pre-filtered restaurant candidates, rank them by relevance. For each match, provide a short reason (max 10 words). Return at most 10 results as a JSON array.`,
         },
         {
           role: "user",
           content: `Query: "${query}"\n\nCandidates:\n${JSON.stringify(candidateContext)}`,
         },
       ],
-      tools: [{
-        type: "function",
-        function: {
-          name: "return_results",
-          description: "Return ranked search results",
-          parameters: {
-            type: "object",
-            properties: {
-              results: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    id: { type: "string" },
-                    reason: { type: "string" },
-                  },
-                  required: ["id", "reason"],
-                  additionalProperties: false,
-                },
+      responseSchema: {
+        type: "object",
+        properties: {
+          results: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "string" },
+                reason: { type: "string" },
               },
+              required: ["id", "reason"],
             },
-            required: ["results"],
-            additionalProperties: false,
           },
         },
-      }],
-      tool_choice: { type: "function", function: { name: "return_results" } },
+        required: ["results"],
+      },
     });
 
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) {
-      return new Response(JSON.stringify({ results: [] }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const parsed = JSON.parse(toolCall.function.arguments);
-    const aiResults = parsed.results || [];
+    const aiResults = aiData.parsed?.results || [];
 
     const candidateMap = new Map(candidates.map((r: any) => [r.id, r]));
     const enrichedResults = aiResults
@@ -156,8 +133,6 @@ serve(async (req) => {
       });
 
     const responseBody = { results: enrichedResults, usedVector };
-
-    // Cache the result
     await setCache(supabase, cacheKey, "search", responseBody, CACHE_TTL_SECONDS);
 
     return new Response(JSON.stringify(responseBody), {

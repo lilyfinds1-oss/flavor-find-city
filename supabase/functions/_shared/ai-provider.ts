@@ -1,125 +1,249 @@
-// AI Provider Abstraction Layer
-// Reads OpenAI API key from app_config table, falls back to LOVABLE_API_KEY gateway
+// AI Provider Abstraction Layer — Google Gemini Only
+// Reads GEMINI_API_KEY from app_config table
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export interface AIProvider {
   chatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResponse>;
   generateEmbedding(text: string): Promise<number[]>;
+  analyzeImage(params: ImageAnalysisParams): Promise<string>;
 }
 
 export interface ChatCompletionParams {
   model?: string;
-  messages: { role: string; content: string }[];
-  tools?: any[];
-  tool_choice?: any;
+  messages: { role: string; content: string | any[] }[];
   temperature?: number;
+  responseSchema?: any;
 }
 
 export interface ChatCompletionResponse {
-  choices: {
-    message: {
-      content?: string;
-      tool_calls?: { function: { name: string; arguments: string } }[];
-    };
-  }[];
+  text: string;
+  parsed?: any;
 }
 
-// Cache the OpenAI key per invocation
-let cachedOpenAIKey: string | null = null;
+export interface ImageAnalysisParams {
+  model?: string;
+  imageBase64: string;
+  mimeType: string;
+  prompt: string;
+}
+
+// Cache keys and settings
+let cachedGeminiKey: string | null = null;
+let cachedSettings: { default_model: string; vision_model: string; recommendation_model: string } | null = null;
 let keyFetched = false;
 
-async function getOpenAIKey(): Promise<string | null> {
-  if (keyFetched) return cachedOpenAIKey;
+function getSupabaseAdmin() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+}
+
+async function getGeminiKey(): Promise<string | null> {
+  if (keyFetched) return cachedGeminiKey;
   keyFetched = true;
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
+    const supabase = getSupabaseAdmin();
     const { data } = await supabase
       .from("app_config")
       .select("value")
-      .eq("key", "openai_api_key")
+      .eq("key", "gemini_api_key")
       .maybeSingle();
 
-    cachedOpenAIKey = data?.value && data.value.startsWith("sk-") ? data.value : null;
+    cachedGeminiKey = data?.value && data.value.length > 10 ? data.value : null;
   } catch (e) {
-    console.error("Failed to fetch OpenAI key:", e);
-    cachedOpenAIKey = null;
+    console.error("Failed to fetch Gemini key:", e);
+    cachedGeminiKey = null;
   }
-  return cachedOpenAIKey;
+  return cachedGeminiKey;
 }
 
-// Model mapping kept for future provider abstraction
-const _OPENAI_MODELS = {
-  chat: "gpt-4o-mini",
-  embedding: "text-embedding-3-small",
-};
+export async function getAISettings() {
+  if (cachedSettings) return cachedSettings;
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase
+      .from("ai_settings")
+      .select("default_model, vision_model, recommendation_model")
+      .limit(1)
+      .maybeSingle();
+
+    cachedSettings = data || {
+      default_model: "gemini-1.5-flash",
+      vision_model: "gemini-1.5-pro",
+      recommendation_model: "gemini-1.5-pro",
+    };
+  } catch {
+    cachedSettings = {
+      default_model: "gemini-1.5-flash",
+      vision_model: "gemini-1.5-pro",
+      recommendation_model: "gemini-1.5-pro",
+    };
+  }
+  return cachedSettings!;
+}
 
 export async function createAIProvider(): Promise<AIProvider> {
-  const openaiKey = await getOpenAIKey();
-
-  if (!openaiKey) {
-    throw new Error("OpenAI API key not configured. Add it in Admin → Settings → OpenAI Configuration.");
+  const geminiKey = await getGeminiKey();
+  if (!geminiKey) {
+    throw new Error("Gemini API key not configured. Add it in Admin → Settings → Gemini Configuration.");
   }
-
-  return createOpenAIProvider(openaiKey);
+  const settings = await getAISettings();
+  return createGeminiProvider(geminiKey, settings);
 }
 
-function createOpenAIProvider(apiKey: string): AIProvider {
+function mapRole(role: string): string {
+  if (role === "system") return "user"; // Gemini doesn't have system role, prepend as user
+  if (role === "assistant") return "model";
+  return "user";
+}
+
+function buildGeminiContents(messages: { role: string; content: string | any[] }[]) {
+  const contents: any[] = [];
+  let systemText = "";
+
+  for (const msg of messages) {
+    if (msg.role === "system") {
+      systemText += (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)) + "\n";
+      continue;
+    }
+
+    const role = mapRole(msg.role);
+    const text = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content);
+
+    // If first user message, prepend system context
+    if (role === "user" && systemText && contents.length === 0) {
+      contents.push({
+        role: "user",
+        parts: [{ text: `${systemText}\n\n${text}` }],
+      });
+      systemText = "";
+    } else {
+      contents.push({ role, parts: [{ text }] });
+    }
+  }
+
+  // If only system messages, add as user
+  if (systemText && contents.length === 0) {
+    contents.push({ role: "user", parts: [{ text: systemText }] });
+  }
+
+  return contents;
+}
+
+function createGeminiProvider(apiKey: string, settings: any): AIProvider {
+  const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
+
   return {
     async chatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResponse> {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: params.model || "gpt-4o-mini",
-          messages: params.messages,
-          tools: params.tools,
-          tool_choice: params.tool_choice,
-          temperature: params.temperature,
-        }),
-      });
+      const model = params.model || settings.default_model || "gemini-1.5-flash";
+      const contents = buildGeminiContents(params.messages);
 
-      if (!response.ok) {
-        const errText = await response.text();
-        if (response.status === 429) throw new AIError("Rate limited by OpenAI", 429);
-        if (response.status === 402 || response.status === 401) throw new AIError("OpenAI API key invalid or billing issue", 402);
-        throw new AIError(`OpenAI error: ${response.status} ${errText}`, response.status);
+      const body: any = {
+        contents,
+        generationConfig: {
+          temperature: params.temperature ?? 0.7,
+        },
+      };
+
+      if (params.responseSchema) {
+        body.generationConfig.responseMimeType = "application/json";
+        body.generationConfig.responseSchema = params.responseSchema;
       }
 
-      return response.json();
-    },
-
-    async generateEmbedding(text: string): Promise<number[]> {
-      const response = await fetch("https://api.openai.com/v1/embeddings", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "text-embedding-3-small",
-          input: text,
-        }),
-      });
+      const response = await fetch(
+        `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new AIError(`OpenAI embedding error: ${response.status} ${errText}`, response.status);
+        if (response.status === 429) throw new AIError("Rate limited by Gemini", 429);
+        if (response.status === 403 || response.status === 401) throw new AIError("Gemini API key invalid", 402);
+        throw new AIError(`Gemini error: ${response.status} ${errText}`, response.status);
       }
 
       const data = await response.json();
-      return data.data[0].embedding;
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+      let parsed: any = undefined;
+      if (params.responseSchema) {
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          // Try to extract JSON from text
+          const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (jsonMatch) {
+            try { parsed = JSON.parse(jsonMatch[0]); } catch {}
+          }
+        }
+      }
+
+      return { text, parsed };
+    },
+
+    async generateEmbedding(text: string): Promise<number[]> {
+      const response = await fetch(
+        `${GEMINI_BASE}/models/text-embedding-004:embedContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "models/text-embedding-004",
+            content: { parts: [{ text }] },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new AIError(`Gemini embedding error: ${response.status} ${errText}`, response.status);
+      }
+
+      const data = await response.json();
+      return data.embedding?.values || [];
+    },
+
+    async analyzeImage(params: ImageAnalysisParams): Promise<string> {
+      const model = params.model || settings.vision_model || "gemini-1.5-pro";
+
+      const response = await fetch(
+        `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              role: "user",
+              parts: [
+                { inlineData: { mimeType: params.mimeType, data: params.imageBase64 } },
+                { text: params.prompt },
+              ],
+            }],
+            generationConfig: {
+              temperature: 0.3,
+              responseMimeType: "application/json",
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new AIError(`Gemini vision error: ${response.status} ${errText}`, response.status);
+      }
+
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     },
   };
 }
-
 
 export class AIError extends Error {
   status: number;
