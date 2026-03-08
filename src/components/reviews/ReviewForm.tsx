@@ -82,27 +82,40 @@ export function ReviewForm({ restaurantId, restaurantName, onSuccess }: ReviewFo
 
     const photoUrls = await uploadPhotos();
 
-    const { error } = await supabase.from("reviews").insert({
+    const { data: reviewData, error } = await supabase.from("reviews").insert({
       restaurant_id: restaurantId,
       user_id: user.id,
       title: title.trim() || null,
       content: content.trim(),
       rating,
       photos: photoUrls.length > 0 ? photoUrls : null,
-      status: "approved",
-    });
+      status: "pending",
+    }).select("id").single();
 
     if (error) {
       console.error("Error submitting review:", error);
       toast.error("Failed to submit review");
     } else {
-      toast.success("Review submitted successfully!");
+      toast.success("Review submitted! It will appear after a quick AI quality check.");
       setTitle("");
       setContent("");
       setRating(0);
       setPhotoFiles([]);
       setPhotoPreviews([]);
       onSuccess?.();
+
+      // Trigger AI moderation asynchronously
+      if (reviewData?.id) {
+        supabase.functions.invoke("ai-moderate-review", {
+          body: {
+            reviewId: reviewData.id,
+            title: title.trim() || null,
+            content: content.trim(),
+            rating,
+            restaurantName,
+          },
+        }).catch((err) => console.error("AI moderation error:", err));
+      }
     }
     setSubmitting(false);
   };
