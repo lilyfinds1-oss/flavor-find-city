@@ -61,34 +61,34 @@ export default function Explore() {
       <main className="flex-1">
         {/* Hero */}
         <div className="bg-gradient-hero border-b border-border">
-          <div className="container py-8">
-            <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
+          <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">
               Explore Restaurants
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm sm:text-base">
               Discover {restaurants?.length || 0}+ amazing places to eat in Lahore
             </p>
 
             {/* Search bar */}
-            <div className="flex gap-2 mt-6 max-w-2xl">
+            <div className="flex gap-2 mt-4 sm:mt-6 max-w-2xl">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search restaurants or neighborhoods..."
+                  placeholder="Search restaurants..."
                   value={search}
                   onChange={(e) => updateFilter("q", e.target.value || null)}
-                  className="pl-10 h-12"
+                  className="pl-9 sm:pl-10 h-10 sm:h-12 text-sm"
                 />
               </div>
               <Button
                 variant={showFilters ? "default" : "outline"}
                 size="lg"
                 onClick={() => setShowFilters(!showFilters)}
-                className="gap-2"
+                className="gap-1.5 sm:gap-2 h-10 sm:h-12 px-3 sm:px-4"
               >
                 <SlidersHorizontal className="w-4 h-4" />
-                Filters
+                <span className="hidden sm:inline">Filters</span>
                 {activeFiltersCount > 0 && (
                   <Badge className="ml-1 bg-primary-foreground text-primary h-5 w-5 p-0 flex items-center justify-center rounded-full text-xs">
                     {activeFiltersCount}
@@ -102,11 +102,10 @@ export default function Explore() {
         {/* Filters Panel */}
         {showFilters && (
           <div className="border-b border-border bg-card animate-slide-in-bottom">
-            <div className="container py-4">
-              <div className="flex flex-wrap gap-4 items-center">
-                {/* Cuisine */}
+            <div className="max-w-6xl mx-auto px-4 py-4">
+              <div className="flex flex-wrap gap-3 sm:gap-4 items-center">
                 <Select value={cuisine} onValueChange={(v) => updateFilter("cuisine", v || null)}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[140px] sm:w-[180px] text-sm">
                     <SelectValue placeholder="All Cuisines" />
                   </SelectTrigger>
                   <SelectContent>
@@ -119,13 +118,13 @@ export default function Explore() {
                   </SelectContent>
                 </Select>
 
-                {/* Price Range */}
                 <div className="flex gap-1">
                   {priceRanges.map((price) => (
                     <Button
                       key={price}
                       variant={priceRange === price ? "default" : "outline"}
                       size="sm"
+                      className="text-xs sm:text-sm px-2 sm:px-3"
                       onClick={() => updateFilter("price", priceRange === price ? null : price)}
                     >
                       {price}
@@ -133,18 +132,17 @@ export default function Explore() {
                   ))}
                 </div>
 
-                {/* Halal */}
                 <Button
                   variant={isHalal ? "default" : "outline"}
                   size="sm"
+                  className="text-xs sm:text-sm"
                   onClick={() => updateFilter("halal", isHalal ? null : "true")}
                 >
                   🥙 Halal
                 </Button>
 
-                {/* Sort */}
                 <Select value={sortBy} onValueChange={(v) => updateFilter("sort", v)}>
-                  <SelectTrigger className="w-[160px]">
+                  <SelectTrigger className="w-[130px] sm:w-[160px] text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -157,9 +155,9 @@ export default function Explore() {
                 </Select>
 
                 {activeFiltersCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="text-destructive">
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="text-destructive text-xs sm:text-sm">
                     <X className="w-4 h-4 mr-1" />
-                    Clear all
+                    Clear
                   </Button>
                 )}
               </div>
@@ -168,19 +166,19 @@ export default function Explore() {
         )}
 
         {/* Results */}
-        <div className="container py-8">
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-card rounded-2xl h-80 animate-pulse" />
+                <div key={i} className="bg-card rounded-2xl h-72 sm:h-80 animate-pulse" />
               ))}
             </div>
           ) : restaurants && restaurants.length > 0 ? (
             <>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                 Showing {restaurants.length} restaurants
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 stagger-children">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 stagger-children">
                 {restaurants.map((restaurant, index) => (
                   <RestaurantCard
                     key={restaurant.id}
