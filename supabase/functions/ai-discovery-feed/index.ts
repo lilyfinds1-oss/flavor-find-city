@@ -1,11 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, AIError } from "../_shared/ai-provider.ts";
+import { getCached, setCache, cleanExpiredCache } from "../_shared/cache.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const CACHE_TTL_SECONDS = 300; // 5 minutes
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -15,8 +18,23 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const ai = await createAIProvider();
     const { filter = "all", userId, page = 0 } = await req.json();
+
+    // Check cache (anonymous feeds are cacheable; personalized ones use userId in key)
+    const cacheKey = `discovery:${filter}:${page}:${userId || "anon"}`;
+    const cached = await getCached(supabase, cacheKey);
+    if (cached) {
+      return new Response(JSON.stringify({ ...cached, fromCache: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Periodically clean expired cache (1 in 20 chance)
+    if (Math.random() < 0.05) {
+      cleanExpiredCache(supabase).catch(console.error);
+    }
+
+    const ai = await createAIProvider();
     const limit = 15;
     const offset = page * limit;
 
@@ -38,14 +56,12 @@ serve(async (req) => {
 
     const { data: restaurants } = await restaurantQuery.range(offset, offset + limit - 1);
 
-    // Fetch active deals (limit 3)
     const { data: deals } = await supabase
       .from("deals")
       .select("id, title, description, discount_value, deal_type, restaurant_id, restaurants(name, slug, cover_image)")
       .eq("is_active", true)
       .limit(3);
 
-    // Fetch recent blog posts (limit 2)
     const { data: blogPosts } = await supabase
       .from("blog_posts")
       .select("id, title, slug, excerpt, cover_image, published_at")
@@ -53,32 +69,18 @@ serve(async (req) => {
       .order("published_at", { ascending: false })
       .limit(2);
 
-    // Build user context if authenticated
+    // Build user context
     let userContext = "";
     if (userId) {
       const [{ data: saved }, { data: reviews }] = await Promise.all([
-        supabase
-          .from("saved_restaurants")
-          .select("restaurant_id, restaurants(name, cuisines, neighborhood)")
-          .eq("user_id", userId)
-          .limit(10),
-        supabase
-          .from("reviews")
-          .select("restaurant_id, rating, restaurants(name, cuisines)")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(10),
+        supabase.from("saved_restaurants").select("restaurant_id, restaurants(name, cuisines, neighborhood)").eq("user_id", userId).limit(10),
+        supabase.from("reviews").select("restaurant_id, rating, restaurants(name, cuisines)").eq("user_id", userId).order("created_at", { ascending: false }).limit(10),
       ]);
-
-      if (saved?.length) {
-        userContext += `Saved: ${saved.map((s: any) => `${s.restaurants?.name} (${s.restaurants?.cuisines?.join(", ")})`).join("; ")}. `;
-      }
-      if (reviews?.length) {
-        userContext += `Reviewed: ${reviews.map((r: any) => `${r.restaurants?.name} (${r.rating}/5)`).join("; ")}. `;
-      }
+      if (saved?.length) userContext += `Saved: ${saved.map((s: any) => `${s.restaurants?.name} (${s.restaurants?.cuisines?.join(", ")})`).join("; ")}. `;
+      if (reviews?.length) userContext += `Reviewed: ${reviews.map((r: any) => `${r.restaurants?.name} (${r.rating}/5)`).join("; ")}. `;
     }
 
-    // ===== STAGE 2: AI ranking on top 15 candidates only =====
+    // ===== STAGE 2: AI ranking on top 15 candidates =====
     const restaurantList = (restaurants || []).map((r: any) => ({
       id: r.id, name: r.name, slug: r.slug, neighborhood: r.neighborhood,
       cuisines: r.cuisines, price_range: r.price_range,
@@ -167,7 +169,12 @@ BLOG POSTS: ${JSON.stringify(blogList)}`;
           image: item.image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
           aiContext: { reason: item.aiReason, icon: item.aiIcon },
         }));
-        return new Response(JSON.stringify({ items: feedItems }), {
+
+        const responseBody = { items: feedItems };
+        // Cache the result
+        await setCache(supabase, cacheKey, "discovery", responseBody, CACHE_TTL_SECONDS);
+
+        return new Response(JSON.stringify(responseBody), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -175,7 +182,7 @@ BLOG POSTS: ${JSON.stringify(blogList)}`;
       console.error("AI ranking failed, returning DB-ranked fallback:", e);
     }
 
-    // Fallback: return DB-ranked restaurants without AI annotations
+    // Fallback: DB-ranked without AI annotations
     const fallbackItems = restaurantList.map((r: any) => ({
       id: r.id, type: "restaurant", slug: r.slug, title: r.name,
       image: r.cover_image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
