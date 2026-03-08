@@ -19,6 +19,12 @@ import TopPosts from "./pages/TopPosts";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Install from "./pages/Install";
+import Pricing from "./pages/Pricing";
+import RestaurantSubscribe from "./pages/RestaurantSubscribe";
+import RestaurantBilling from "./pages/RestaurantBilling";
+import AIToolsDashboard from "./pages/AIToolsDashboard";
+import MenuAnalyzer from "./pages/MenuAnalyzer";
+import MarketingAssistant from "./pages/MarketingAssistant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +49,12 @@ function AnimatedRoutes() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/install" element={<Install />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/restaurant-subscribe" element={<RestaurantSubscribe />} />
+        <Route path="/billing" element={<RestaurantBilling />} />
+        <Route path="/ai-tools" element={<AIToolsDashboard />} />
+        <Route path="/menu-analyzer" element={<MenuAnalyzer />} />
+        <Route path="/marketing-assistant" element={<MarketingAssistant />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

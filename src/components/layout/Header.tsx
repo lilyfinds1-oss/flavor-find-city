@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, BookOpen } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, BookOpen, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -146,6 +146,18 @@ export function Header() {
                   <Link to="/leaderboard" className="cursor-pointer">
                     <Trophy className="w-4 h-4 mr-2 text-accent" />
                     Leaderboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ai-tools" className="cursor-pointer">
+                    <Sparkles className="w-4 h-4 mr-2 text-primary" />
+                    AI Tools
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/billing" className="cursor-pointer">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Billing
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (

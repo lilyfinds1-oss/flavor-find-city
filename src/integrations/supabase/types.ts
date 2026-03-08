@@ -479,6 +479,100 @@ export type Database = {
           },
         ]
       }
+      restaurant_dishes: {
+        Row: {
+          ai_spice_level: string | null
+          category: string | null
+          created_at: string
+          dietary_tags: string[] | null
+          dish_name: string
+          id: string
+          ingredients: string[] | null
+          price: number | null
+          restaurant_id: string
+        }
+        Insert: {
+          ai_spice_level?: string | null
+          category?: string | null
+          created_at?: string
+          dietary_tags?: string[] | null
+          dish_name: string
+          id?: string
+          ingredients?: string[] | null
+          price?: number | null
+          restaurant_id: string
+        }
+        Update: {
+          ai_spice_level?: string | null
+          category?: string | null
+          created_at?: string
+          dietary_tags?: string[] | null
+          dish_name?: string
+          id?: string
+          ingredients?: string[] | null
+          price?: number | null
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_dishes_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurant_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_name: string
+          restaurant_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_name?: string
+          restaurant_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_name?: string
+          restaurant_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_subscriptions_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: true
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_votes: {
         Row: {
           created_at: string | null
