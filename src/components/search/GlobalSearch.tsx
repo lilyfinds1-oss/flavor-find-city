@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, X, MapPin, Star, TrendingUp } from "lucide-react";
+import { Search, X, MapPin, Star, TrendingUp, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
 
 interface SearchResult {
   id: string;
@@ -14,6 +15,7 @@ interface SearchResult {
   cuisines: string[] | null;
   average_rating: number | null;
   cover_image: string | null;
+  aiReason?: string;
 }
 
 interface GlobalSearchProps {
@@ -23,23 +25,29 @@ interface GlobalSearchProps {
 
 export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [keywordResults, setKeywordResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isAIMode, setIsAIMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  const shouldUseAI = isNaturalLanguageQuery(query);
+  const { data: aiResults, isLoading: aiLoading } = useAISearch(query, isOpen && shouldUseAI);
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
       setQuery("");
-      setResults([]);
+      setKeywordResults([]);
+      setIsAIMode(false);
     }
   }, [isOpen]);
 
+  // Keyword search fallback for simple queries
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
+    if (!query.trim() || shouldUseAI) {
+      setKeywordResults([]);
       return;
     }
 
@@ -51,12 +59,27 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         .or(`name.ilike.%${query}%,neighborhood.ilike.%${query}%,address.ilike.%${query}%`)
         .limit(8);
 
-      setResults(data || []);
+      setKeywordResults(data || []);
       setLoading(false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, shouldUseAI]);
+
+  const results: SearchResult[] = shouldUseAI
+    ? (aiResults || []).map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        neighborhood: r.neighborhood,
+        cuisines: r.cuisines,
+        average_rating: r.average_rating,
+        cover_image: r.cover_image,
+        aiReason: r.aiReason,
+      }))
+    : keywordResults;
+
+  const isSearching = shouldUseAI ? aiLoading : loading;
 
   const handleSelect = (slug: string) => {
     onClose();
@@ -80,11 +103,15 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         <div className="bg-card border border-border rounded-2xl shadow-xl overflow-hidden animate-scale-in">
           {/* Search Input */}
           <div className="flex items-center gap-3 px-5 border-b border-border">
-            <Search className="w-5 h-5 text-muted-foreground shrink-0" />
+            {shouldUseAI ? (
+              <Sparkles className="w-5 h-5 text-primary shrink-0" />
+            ) : (
+              <Search className="w-5 h-5 text-muted-foreground shrink-0" />
+            )}
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Search restaurants, cuisines, neighborhoods..."
+              placeholder="Try 'cheap spicy food near Model Town' or just a name..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -98,13 +125,23 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             </button>
           </div>
 
+          {/* AI mode indicator */}
+          {shouldUseAI && query && (
+            <div className="px-5 py-2 bg-primary/5 border-b border-border flex items-center gap-2 text-xs text-primary">
+              <Sparkles className="w-3 h-3" />
+              AI-powered semantic search active
+            </div>
+          )}
+
           {/* Results */}
           <div className="max-h-[60vh] overflow-y-auto">
-            {loading && (
-              <div className="p-6 text-center text-muted-foreground text-sm">Searching...</div>
+            {isSearching && (
+              <div className="p-6 text-center text-muted-foreground text-sm">
+                {shouldUseAI ? "AI is finding the best matches..." : "Searching..."}
+              </div>
             )}
 
-            {!loading && results.length > 0 && (
+            {!isSearching && results.length > 0 && (
               <div className="p-2">
                 {results.map((r) => (
                   <button
@@ -133,6 +170,12 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                           </span>
                         )}
                       </div>
+                      {r.aiReason && (
+                        <p className="text-xs text-primary mt-0.5 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          {r.aiReason}
+                        </p>
+                      )}
                     </div>
                     {r.cuisines && r.cuisines.length > 0 && (
                       <Badge variant="secondary" className="text-xs shrink-0">
@@ -153,7 +196,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
               </div>
             )}
 
-            {!loading && query && results.length === 0 && (
+            {!isSearching && query && results.length === 0 && (
               <div className="p-8 text-center">
                 <p className="text-muted-foreground mb-2">No restaurants found for "{query}"</p>
                 <button
@@ -167,9 +210,9 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
             {!query && (
               <div className="p-4">
-                <p className="text-xs text-muted-foreground mb-3 px-2">Quick Filters</p>
+                <p className="text-xs text-muted-foreground mb-3 px-2">Try asking naturally</p>
                 <div className="flex flex-wrap gap-2 px-2">
-                  {["Halal", "Desi", "Fine Dining", "Gulberg", "DHA", "Pizza", "BBQ"].map((tag) => (
+                  {["cheap spicy food near DHA", "best biryani in Lahore", "romantic dinner spots", "Halal", "Fine Dining", "late night pizza"].map((tag) => (
                     <button
                       key={tag}
                       onClick={() => setQuery(tag)}
@@ -189,6 +232,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
               <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">ESC</kbd> to close
             </span>
             <span>
+              {shouldUseAI && <Sparkles className="w-3 h-3 inline mr-1" />}
               <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">↵</kbd> to explore
             </span>
           </div>

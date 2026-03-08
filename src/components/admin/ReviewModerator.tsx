@@ -155,6 +155,23 @@ export default function ReviewModerator() {
                     </div>
                   )}
 
+                  {/* AI Moderation Info */}
+                  {(review.ai_quality_score != null || review.ai_moderation_notes) && (
+                    <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-xs uppercase tracking-wider text-muted-foreground">AI Assessment</span>
+                        {review.ai_quality_score != null && (
+                          <Badge variant={review.ai_quality_score >= 70 ? "default" : review.ai_quality_score >= 40 ? "secondary" : "destructive"} className="text-xs">
+                            Score: {review.ai_quality_score}/100
+                          </Badge>
+                        )}
+                      </div>
+                      {review.ai_moderation_notes && (
+                        <p className="text-muted-foreground text-xs">{review.ai_moderation_notes}</p>
+                      )}
+                    </div>
+                  )}
+
                   {review.status === "pending" && (
                     <div className="flex gap-2 pt-2">
                       <Button

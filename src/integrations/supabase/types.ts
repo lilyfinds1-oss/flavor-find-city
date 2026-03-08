@@ -623,6 +623,8 @@ export type Database = {
       }
       reviews: {
         Row: {
+          ai_moderation_notes: string | null
+          ai_quality_score: number | null
           content: string
           created_at: string | null
           helpful_votes: number | null
@@ -639,6 +641,8 @@ export type Database = {
           xp_earned: number | null
         }
         Insert: {
+          ai_moderation_notes?: string | null
+          ai_quality_score?: number | null
           content: string
           created_at?: string | null
           helpful_votes?: number | null
@@ -655,6 +659,8 @@ export type Database = {
           xp_earned?: number | null
         }
         Update: {
+          ai_moderation_notes?: string | null
+          ai_quality_score?: number | null
           content?: string
           created_at?: string | null
           helpful_votes?: number | null
