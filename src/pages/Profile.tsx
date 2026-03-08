@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, Save, User, Star, MessageSquare, Award, Loader2 } from "lucide-react";
 import { ReferralSection } from "@/components/profile/ReferralSection";
+import { PushNotificationToggle } from "@/components/layout/PushNotificationToggle";
 import { BADGES, BadgeDisplay, getEarnedBadges, getProgress } from "@/components/gamification/BadgeSystem";
 
 interface Profile {
@@ -253,6 +254,19 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Push Notifications */}
+          <div className="md:col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Push Notifications</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Get notified about new deals and trending restaurants</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PushNotificationToggle />
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Referral Section */}
           <div className="md:col-span-3">
