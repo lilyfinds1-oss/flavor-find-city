@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain, Database, Loader2, Sparkles, Settings } from "lucide-react";
+import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain, Database, Loader2, Sparkles, Settings, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { useAppConfig, useUpdateAppConfig } from "@/hooks/useAppConfig";
 
@@ -277,6 +277,8 @@ function AIModelSettings() {
 export default function SettingsPanel() {
   const { data: mapboxToken } = useAppConfig("mapbox_public_token");
   const { data: geminiToken } = useAppConfig("gemini_api_key" as any);
+  const { data: stripeSecretKey } = useAppConfig("stripe_secret_key" as any);
+  const { data: stripePublishableKey } = useAppConfig("stripe_publishable_key" as any);
   const [generatingEmbeddings, setGeneratingEmbeddings] = useState(false);
   const [embeddingResult, setEmbeddingResult] = useState<string | null>(null);
 
@@ -299,6 +301,8 @@ export default function SettingsPanel() {
     }
   };
 
+  const isStripeConfigured = !!stripeSecretKey && stripeSecretKey.length > 0;
+
   const integrations = [
     {
       label: "Mapbox GL",
@@ -311,6 +315,12 @@ export default function SettingsPanel() {
       description: "AI search, vision, moderation & recommendations",
       icon: Brain,
       configured: !!geminiToken && geminiToken.length > 0,
+    },
+    {
+      label: "Stripe",
+      description: "Payments & subscriptions for restaurant plans",
+      icon: CreditCard,
+      configured: isStripeConfigured,
     },
   ];
 
@@ -353,6 +363,38 @@ export default function SettingsPanel() {
           "AI-powered blog generation",
           "Review auto-moderation with quality scoring",
         ]}
+      />
+
+      <ConfigTokenCard
+        title="Stripe Secret Key"
+        description="Enable payment processing for restaurant subscriptions"
+        icon={CreditCard}
+        configKey="stripe_secret_key"
+        placeholder="sk_live_..."
+        helpText="Get your API keys from"
+        helpUrl="https://dashboard.stripe.com/apikeys"
+        helpLabel="Stripe Dashboard"
+        integrationLabel="Stripe"
+        integrationDescription="Payments & subscriptions"
+        features={[
+          "Restaurant subscription billing (Starter & Growth plans)",
+          "Secure checkout via Stripe",
+          "Recurring monthly payments",
+          "Billing history & plan management",
+        ]}
+      />
+
+      <ConfigTokenCard
+        title="Stripe Publishable Key"
+        description="Client-side key for Stripe Elements and checkout"
+        icon={CreditCard}
+        configKey="stripe_publishable_key"
+        placeholder="pk_live_..."
+        helpText="Get your publishable key from"
+        helpUrl="https://dashboard.stripe.com/apikeys"
+        helpLabel="Stripe Dashboard"
+        integrationLabel="Stripe (Client)"
+        integrationDescription="Client-side payment forms"
       />
 
       <AIModelSettings />
