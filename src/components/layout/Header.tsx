@@ -148,6 +148,18 @@ export function Header() {
                     Leaderboard
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ai-tools" className="cursor-pointer">
+                    <Sparkles className="w-4 h-4 mr-2 text-primary" />
+                    AI Tools
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/billing" className="cursor-pointer">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Billing
+                  </Link>
+                </DropdownMenuItem>
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator className="bg-border/50" />
