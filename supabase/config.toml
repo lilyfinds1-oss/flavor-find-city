@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.generate-blog]
 verify_jwt = false
+
+[functions.ai-search]
+verify_jwt = false
+
+[functions.ai-discovery-feed]
+verify_jwt = false
+
+[functions.ai-moderate-review]
+verify_jwt = false
+
+[functions.generate-embeddings]
+verify_jwt = false
