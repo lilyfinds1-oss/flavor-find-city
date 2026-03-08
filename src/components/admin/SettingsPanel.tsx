@@ -250,6 +250,7 @@ export default function SettingsPanel() {
         </CardContent>
       </Card>
 
+      <Card>
         <CardHeader>
           <CardTitle>API Integrations</CardTitle>
           <CardDescription>Manage third-party service connections</CardDescription>
