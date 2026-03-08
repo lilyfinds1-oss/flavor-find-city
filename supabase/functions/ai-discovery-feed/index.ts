@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createAIProvider, AIError } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,21 +11,19 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const ai = await createAIProvider();
     const { filter = "all", userId, page = 0 } = await req.json();
-    const limit = 9;
+    const limit = 15;
     const offset = page * limit;
 
-    // Fetch restaurants
+    // ===== STAGE 1: Database pre-filtering =====
     let restaurantQuery = supabase
       .from("restaurants")
-      .select("id, name, slug, neighborhood, cuisines, price_range, average_rating, total_reviews, cover_image, tiktok_trend_score, ranking_score, is_halal, signature_dishes, description, created_at")
+      .select("id, name, slug, neighborhood, cuisines, price_range, average_rating, total_reviews, cover_image, tiktok_trend_score, ranking_score, is_halal, signature_dishes, description, short_description, tags, ambience, popular_dishes, created_at")
       .eq("is_active", true);
 
     if (filter === "trending") {
@@ -39,14 +38,14 @@ serve(async (req) => {
 
     const { data: restaurants } = await restaurantQuery.range(offset, offset + limit - 1);
 
-    // Fetch active deals
+    // Fetch active deals (limit 3)
     const { data: deals } = await supabase
       .from("deals")
       .select("id, title, description, discount_value, deal_type, restaurant_id, restaurants(name, slug, cover_image)")
       .eq("is_active", true)
       .limit(3);
 
-    // Fetch recent blog posts
+    // Fetch recent blog posts (limit 2)
     const { data: blogPosts } = await supabase
       .from("blog_posts")
       .select("id, title, slug, excerpt, cover_image, published_at")
@@ -54,93 +53,65 @@ serve(async (req) => {
       .order("published_at", { ascending: false })
       .limit(2);
 
-    // Fetch user context if authenticated
+    // Build user context if authenticated
     let userContext = "";
     if (userId) {
-      const { data: savedRestaurants } = await supabase
-        .from("saved_restaurants")
-        .select("restaurant_id, restaurants(name, cuisines, neighborhood)")
-        .eq("user_id", userId)
-        .limit(10);
+      const [{ data: saved }, { data: reviews }] = await Promise.all([
+        supabase
+          .from("saved_restaurants")
+          .select("restaurant_id, restaurants(name, cuisines, neighborhood)")
+          .eq("user_id", userId)
+          .limit(10),
+        supabase
+          .from("reviews")
+          .select("restaurant_id, rating, restaurants(name, cuisines)")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+      ]);
 
-      const { data: userReviews } = await supabase
-        .from("reviews")
-        .select("restaurant_id, rating, restaurants(name, cuisines, neighborhood)")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (savedRestaurants?.length) {
-        const savedNames = savedRestaurants.map((s: any) => `${s.restaurants?.name} (${s.restaurants?.cuisines?.join(", ")})`).join("; ");
-        userContext += `User's saved restaurants: ${savedNames}. `;
+      if (saved?.length) {
+        userContext += `Saved: ${saved.map((s: any) => `${s.restaurants?.name} (${s.restaurants?.cuisines?.join(", ")})`).join("; ")}. `;
       }
-      if (userReviews?.length) {
-        const reviewedNames = userReviews.map((r: any) => `${r.restaurants?.name} (rated ${r.rating}/5)`).join("; ");
-        userContext += `User's recent reviews: ${reviewedNames}. `;
+      if (reviews?.length) {
+        userContext += `Reviewed: ${reviews.map((r: any) => `${r.restaurants?.name} (${r.rating}/5)`).join("; ")}. `;
       }
     }
 
+    // ===== STAGE 2: AI ranking on top 15 candidates only =====
     const restaurantList = (restaurants || []).map((r: any) => ({
-      id: r.id,
-      name: r.name,
-      slug: r.slug,
-      neighborhood: r.neighborhood,
-      cuisines: r.cuisines,
-      price_range: r.price_range,
-      average_rating: r.average_rating,
-      total_reviews: r.total_reviews,
-      cover_image: r.cover_image,
-      tiktok_trend_score: r.tiktok_trend_score,
-      signature_dishes: r.signature_dishes,
+      id: r.id, name: r.name, slug: r.slug, neighborhood: r.neighborhood,
+      cuisines: r.cuisines, price_range: r.price_range,
+      average_rating: r.average_rating, total_reviews: r.total_reviews,
+      cover_image: r.cover_image, tiktok_trend_score: r.tiktok_trend_score,
+      signature_dishes: r.signature_dishes, tags: r.tags, ambience: r.ambience,
     }));
 
     const dealsList = (deals || []).map((d: any) => ({
-      id: d.id,
-      title: d.title,
-      description: d.description,
-      discount_value: d.discount_value,
-      deal_type: d.deal_type,
-      restaurant_name: d.restaurants?.name,
-      restaurant_slug: d.restaurants?.slug,
+      id: d.id, title: d.title, description: d.description,
+      discount_value: d.discount_value, deal_type: d.deal_type,
+      restaurant_name: d.restaurants?.name, restaurant_slug: d.restaurants?.slug,
       cover_image: d.restaurants?.cover_image,
     }));
 
     const blogList = (blogPosts || []).map((b: any) => ({
-      id: b.id,
-      title: b.title,
-      slug: b.slug,
-      excerpt: b.excerpt,
-      cover_image: b.cover_image,
+      id: b.id, title: b.title, slug: b.slug, excerpt: b.excerpt, cover_image: b.cover_image,
     }));
 
-    const systemPrompt = `You are a restaurant discovery AI for a food app in Lahore, Pakistan. Your job is to rank and annotate feed items with personalized context.
-
-Given a list of restaurants, deals, and blog posts, return a JSON array of feed items ordered by relevance. Each item needs an "aiContext" with a short, compelling reason (max 8 words) and an icon type.
+    const systemPrompt = `You are a restaurant discovery AI for CityBites in Lahore, Pakistan. Rank and annotate these pre-filtered feed items. Each item needs an "aiReason" (max 8 words) and an "aiIcon" type.
 
 Icon types: "trending", "popular", "time", "location", "preference", "new"
 
-${userContext ? `USER CONTEXT: ${userContext}` : "This is an anonymous user - focus on popularity and trending data."}
+${userContext ? `USER CONTEXT: ${userContext}` : "Anonymous user — focus on popularity and trending."}
+FILTER: "${filter}" — ${filter === "trending" ? "prioritize trending" : filter === "hot" ? "prioritize most reviewed" : filter === "new" ? "prioritize newest" : "personalized mix"}`;
 
-FILTER: "${filter}" - ${filter === "trending" ? "prioritize trending items" : filter === "hot" ? "prioritize popular/most reviewed" : filter === "new" ? "prioritize newest items" : "mix of everything, personalized"}`;
-
-    const userPrompt = `Here are the items to rank and annotate:
-
-RESTAURANTS: ${JSON.stringify(restaurantList)}
-
+    const userPrompt = `RESTAURANTS: ${JSON.stringify(restaurantList)}
 DEALS: ${JSON.stringify(dealsList)}
+BLOG POSTS: ${JSON.stringify(blogList)}`;
 
-BLOG POSTS: ${JSON.stringify(blogList)}
-
-Return ONLY a JSON array using this tool call.`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+    try {
+      const aiData = await ai.chatCompletion({
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -149,7 +120,7 @@ Return ONLY a JSON array using this tool call.`;
           type: "function",
           function: {
             name: "return_feed",
-            description: "Return the ranked and annotated discovery feed items",
+            description: "Return ranked discovery feed items",
             parameters: {
               type: "object",
               properties: {
@@ -186,62 +157,42 @@ Return ONLY a JSON array using this tool call.`;
           },
         }],
         tool_choice: { type: "function", function: { name: "return_feed" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, please try again shortly" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      // Fallback: return restaurants without AI annotations
-      const fallbackItems = restaurantList.map((r: any) => ({
-        id: r.id,
-        type: "restaurant",
-        slug: r.slug,
-        title: r.name,
-        image: r.cover_image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
-        rating: r.average_rating,
-        reviewCount: r.total_reviews,
-        priceRange: r.price_range,
-        neighborhood: r.neighborhood,
-        cuisines: r.cuisines,
-        isTrending: r.tiktok_trend_score > 70,
-        aiContext: { reason: "Popular in Lahore", icon: "popular" },
-      }));
-      return new Response(JSON.stringify({ items: fallbackItems }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+
+      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall?.function?.arguments) {
+        const parsed = JSON.parse(toolCall.function.arguments);
+        const feedItems = (parsed.items || []).map((item: any) => ({
+          ...item,
+          image: item.image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
+          aiContext: { reason: item.aiReason, icon: item.aiIcon },
+        }));
+        return new Response(JSON.stringify({ items: feedItems }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch (e) {
+      console.error("AI ranking failed, returning DB-ranked fallback:", e);
     }
 
-    const aiData = await response.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    let feedItems: any[] = [];
+    // Fallback: return DB-ranked restaurants without AI annotations
+    const fallbackItems = restaurantList.map((r: any) => ({
+      id: r.id, type: "restaurant", slug: r.slug, title: r.name,
+      image: r.cover_image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
+      rating: r.average_rating, reviewCount: r.total_reviews,
+      priceRange: r.price_range, neighborhood: r.neighborhood,
+      cuisines: r.cuisines, isTrending: (r.tiktok_trend_score || 0) > 70,
+      aiContext: { reason: "Popular in Lahore", icon: "popular" },
+    }));
 
-    if (toolCall?.function?.arguments) {
-      const parsed = JSON.parse(toolCall.function.arguments);
-      feedItems = (parsed.items || []).map((item: any) => ({
-        ...item,
-        image: item.image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
-        aiContext: { reason: item.aiReason, icon: item.aiIcon },
-      }));
-    }
-
-    return new Response(JSON.stringify({ items: feedItems }), {
+    return new Response(JSON.stringify({ items: fallbackItems }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("Discovery feed error:", e);
+    const status = e instanceof AIError ? e.status : 500;
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

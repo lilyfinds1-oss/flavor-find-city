@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain } from "lucide-react";
+import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain, Database, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppConfig, useUpdateAppConfig } from "@/hooks/useAppConfig";
 
@@ -136,6 +137,27 @@ function ConfigTokenCard({
 export default function SettingsPanel() {
   const { data: mapboxToken } = useAppConfig("mapbox_public_token");
   const { data: openaiToken } = useAppConfig("openai_api_key");
+  const [generatingEmbeddings, setGeneratingEmbeddings] = useState(false);
+  const [embeddingResult, setEmbeddingResult] = useState<string | null>(null);
+
+  const handleGenerateEmbeddings = async () => {
+    setGeneratingEmbeddings(true);
+    setEmbeddingResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-embeddings", {
+        body: { batchAll: true },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setEmbeddingResult(`✓ Processed ${data.processed} restaurants (${data.errors} errors)`);
+      toast.success(`Generated embeddings for ${data.processed} restaurants`);
+    } catch (e: any) {
+      setEmbeddingResult(`✗ ${e.message}`);
+      toast.error(e.message || "Failed to generate embeddings");
+    } finally {
+      setGeneratingEmbeddings(false);
+    }
+  };
 
   const integrations = [
     {
@@ -191,6 +213,42 @@ export default function SettingsPanel() {
           "Review auto-moderation with quality scoring",
         ]}
       />
+
+      {/* Embedding Generation */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Database className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle>Vector Embeddings</CardTitle>
+              <CardDescription>Generate embeddings for semantic search (requires OpenAI key)</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Generates vector embeddings for all restaurants that don't have one yet. This powers the hybrid semantic search system.
+          </p>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={handleGenerateEmbeddings}
+              disabled={generatingEmbeddings || !openaiToken}
+              className="gap-2"
+            >
+              {generatingEmbeddings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              {generatingEmbeddings ? "Generating..." : "Generate Embeddings"}
+            </Button>
+            {embeddingResult && (
+              <span className="text-sm text-muted-foreground">{embeddingResult}</span>
+            )}
+          </div>
+          {!openaiToken && (
+            <p className="text-xs text-destructive">Configure your OpenAI API key above to enable embedding generation.</p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
