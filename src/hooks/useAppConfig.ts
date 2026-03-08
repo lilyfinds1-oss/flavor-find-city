@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppConfigKey = "mapbox_public_token";
+export type AppConfigKey = "mapbox_public_token" | "openai_api_key";
 
 export function useAppConfig(key: AppConfigKey) {
   return useQuery({
