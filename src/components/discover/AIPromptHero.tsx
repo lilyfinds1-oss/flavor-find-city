@@ -65,14 +65,14 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
   };
 
   return (
-    <section className="relative min-h-[70vh] flex flex-col items-center justify-center px-4 py-20 overflow-hidden">
+    <section className="relative min-h-[60vh] sm:min-h-[70vh] flex flex-col items-center justify-center px-4 py-12 sm:py-20 overflow-hidden">
       {/* Background ambient effects */}
       <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-ai-pulse/5 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
+      <div className="absolute top-1/4 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse-glow" />
+      <div className="absolute bottom-1/4 right-1/4 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-ai-pulse/5 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
       
       {/* Context indicators */}
-      <div className="relative z-10 flex items-center gap-4 mb-8 text-sm text-muted-foreground animate-fade-in">
+      <div className="relative z-10 flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm text-muted-foreground animate-fade-in">
         <span className="flex items-center gap-1.5 chip">
           <MapPin className="w-3.5 h-3.5" />
           Lahore
@@ -86,11 +86,11 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
       {/* Main prompt area */}
       <div className="relative z-10 w-full max-w-2xl mx-auto text-center">
         {/* Greeting */}
-        <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 animate-fade-in-up">
+        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4 animate-fade-in-up">
           {greeting} <span className="gradient-text-ai">✨</span>
         </h1>
         
-        <p className="text-lg text-muted-foreground mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+        <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           Tell me what you're in the mood for
         </p>
 
@@ -98,7 +98,7 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
         <form onSubmit={handleSubmit} className="relative animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <div
             className={cn(
-              "relative flex items-center gap-3 p-2 rounded-2xl transition-all duration-500",
+              "relative flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-2xl transition-all duration-500",
               "bg-card border-2",
               isFocused 
                 ? "border-primary/50 shadow-lg shadow-primary/10" 
@@ -107,11 +107,11 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
           >
             {/* AI indicator */}
             <div className={cn(
-              "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300",
+              "flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all duration-300 shrink-0",
               isFocused ? "bg-gradient-ai" : "bg-muted"
             )}>
               <Sparkles className={cn(
-                "w-5 h-5 transition-colors",
+                "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
                 isFocused ? "text-white" : "text-muted-foreground"
               )} />
             </div>
@@ -124,15 +124,15 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               placeholder="What are you craving right now?"
-              className="flex-1 bg-transparent text-lg text-foreground placeholder:text-muted-foreground focus:outline-none py-3"
+              className="flex-1 min-w-0 bg-transparent text-base sm:text-lg text-foreground placeholder:text-muted-foreground focus:outline-none py-2 sm:py-3"
             />
 
-            {/* Voice button (UI only) */}
+            {/* Voice button (UI only) - hidden on small mobile */}
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="rounded-xl text-muted-foreground hover:text-foreground"
+              className="rounded-xl text-muted-foreground hover:text-foreground hidden sm:flex shrink-0"
             >
               <Mic className="w-5 h-5" />
             </Button>
@@ -143,7 +143,7 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
               variant="ai"
               size="lg"
               className={cn(
-                "rounded-xl transition-all duration-300",
+                "rounded-xl transition-all duration-300 shrink-0 h-10 w-10 sm:h-auto sm:w-auto p-0 sm:px-4",
                 query.trim() ? "opacity-100 scale-100" : "opacity-50 scale-95"
               )}
               disabled={!query.trim()}
@@ -159,12 +159,12 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
         </form>
 
         {/* Quick chips */}
-        <div className="flex flex-wrap justify-center gap-2 mt-8 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+        <div className="flex flex-wrap justify-center gap-2 mt-6 sm:mt-8 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
           {quickChips.map((chip, index) => (
             <button
               key={index}
               onClick={() => handleChipClick(chip.query)}
-              className="chip hover:bg-muted/80 hover:scale-105 active:scale-95 transition-all duration-200"
+              className="chip hover:bg-muted/80 hover:scale-105 active:scale-95 transition-all duration-200 text-xs sm:text-sm"
             >
               <span>{chip.emoji}</span>
               <span>{chip.text}</span>
@@ -173,8 +173,8 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground animate-bounce-subtle">
+      {/* Scroll indicator - hidden on mobile */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 text-muted-foreground animate-bounce-subtle">
         <span className="text-xs uppercase tracking-wider">Discover</span>
         <div className="w-px h-8 bg-gradient-to-b from-muted-foreground/50 to-transparent" />
       </div>
