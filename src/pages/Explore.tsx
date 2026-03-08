@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, X, MapPin } from "lucide-react";
+import { Search, SlidersHorizontal, X, MapPin, Sparkles } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { RestaurantCard } from "@/components/restaurant/RestaurantCard";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRestaurants, useCategories } from "@/hooks/useRestaurants";
+import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
 
 const priceRanges = ["$", "$$", "$$$", "$$$$"];
 const sortOptions = [
@@ -28,15 +29,22 @@ export default function Explore() {
   const sortBy = (searchParams.get("sort") as "ranking" | "rating" | "reviews" | "trending") || "ranking";
   const isHalal = searchParams.get("halal") === "true";
 
+  const useAI = isNaturalLanguageQuery(search);
+  
   const { data: restaurants, isLoading } = useRestaurants({
     cuisine: cuisine || undefined,
     priceRange: priceRange || undefined,
     sortBy,
     isHalal: isHalal || undefined,
-    search: search || undefined,
+    search: (!useAI && search) ? search : undefined,
   });
 
+  const { data: aiResults, isLoading: aiLoading } = useAISearch(search, useAI);
+
   const { data: categories } = useCategories();
+
+  const displayRestaurants = useAI && aiResults ? aiResults : restaurants;
+  const displayLoading = useAI ? aiLoading : isLoading;
 
   const updateFilter = (key: string, value: string | null) => {
     const newParams = new URLSearchParams(searchParams);
@@ -66,7 +74,7 @@ export default function Explore() {
               Explore Restaurants
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Discover {restaurants?.length || 0}+ amazing places to eat in Lahore
+              Discover {displayRestaurants?.length || 0}+ amazing places to eat in Lahore
             </p>
 
             {/* Search bar */}
