@@ -212,7 +212,7 @@ export default function SettingsPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   {item.configured ? (
-                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <CheckCircle className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                   ) : (
                     <XCircle className="w-4 h-4 text-muted-foreground" />
                   )}
