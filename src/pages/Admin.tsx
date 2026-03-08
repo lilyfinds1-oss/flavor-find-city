@@ -12,7 +12,8 @@ import UserRoleManager from "@/components/admin/UserRoleManager";
 import DealsManager from "@/components/admin/DealsManager";
 import ClaimsManager from "@/components/admin/ClaimsManager";
 import BlogPostEditor from "@/components/admin/BlogPostEditor";
-import { Shield, Store, MessageSquare, BarChart3, Settings, Users, Ticket, Building2, FileText } from "lucide-react";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
+import { Shield, Store, MessageSquare, BarChart3, Settings, Users, Ticket, Building2, FileText, LineChart } from "lucide-react";
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth();
@@ -85,6 +86,10 @@ export default function Admin() {
               <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="hidden xs:inline">Settings</span>
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-1.5 sm:gap-2 text-xs sm:text-sm shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-3 py-2">
+              <LineChart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Analytics</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -110,6 +115,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="settings">
             <SettingsPanel />
+          </TabsContent>
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
           </TabsContent>
         </Tabs>
       </main>
