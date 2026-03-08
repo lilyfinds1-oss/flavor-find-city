@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRestaurants, useCategories } from "@/hooks/useRestaurants";
 import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
+import { DishScanner } from "@/components/discover/DishScanner";
 
 const priceRanges = ["$", "$$", "$$$", "$$$$"];
 const sortOptions = [
@@ -183,6 +184,11 @@ export default function Explore() {
             </div>
           </div>
         )}
+
+        {/* Dish Scanner */}
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <DishScanner />
+        </div>
 
         {/* Results */}
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
