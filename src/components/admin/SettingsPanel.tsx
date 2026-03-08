@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain } from "lucide-react";
+import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain, Database, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppConfig, useUpdateAppConfig } from "@/hooks/useAppConfig";
 
@@ -137,6 +137,27 @@ function ConfigTokenCard({
 export default function SettingsPanel() {
   const { data: mapboxToken } = useAppConfig("mapbox_public_token");
   const { data: openaiToken } = useAppConfig("openai_api_key");
+  const [generatingEmbeddings, setGeneratingEmbeddings] = useState(false);
+  const [embeddingResult, setEmbeddingResult] = useState<string | null>(null);
+
+  const handleGenerateEmbeddings = async () => {
+    setGeneratingEmbeddings(true);
+    setEmbeddingResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-embeddings", {
+        body: { batchAll: true },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setEmbeddingResult(`✓ Processed ${data.processed} restaurants (${data.errors} errors)`);
+      toast.success(`Generated embeddings for ${data.processed} restaurants`);
+    } catch (e: any) {
+      setEmbeddingResult(`✗ ${e.message}`);
+      toast.error(e.message || "Failed to generate embeddings");
+    } finally {
+      setGeneratingEmbeddings(false);
+    }
+  };
 
   const integrations = [
     {
