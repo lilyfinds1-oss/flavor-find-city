@@ -173,21 +173,32 @@ export default function Explore() {
           </div>
         )}
 
+        {/* AI Search Banner */}
+        {useAI && search && (
+          <div className="max-w-6xl mx-auto px-4 pt-4">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10 text-sm">
+              <Sparkles className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-primary font-medium">AI-powered search</span>
+              <span className="text-muted-foreground">— understanding "{search}"</span>
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-          {isLoading ? (
+          {displayLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="bg-card rounded-2xl h-72 sm:h-80 animate-pulse" />
               ))}
             </div>
-          ) : restaurants && restaurants.length > 0 ? (
+          ) : displayRestaurants && displayRestaurants.length > 0 ? (
             <>
               <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                Showing {restaurants.length} restaurants
+                Showing {displayRestaurants.length} restaurants
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 stagger-children">
-                {restaurants.map((restaurant, index) => (
+                {displayRestaurants.map((restaurant: any, index: number) => (
                   <RestaurantCard
                     key={restaurant.id}
                     id={restaurant.id}
@@ -197,10 +208,11 @@ export default function Explore() {
                     cuisines={restaurant.cuisines}
                     priceRange={restaurant.price_range}
                     neighborhood={restaurant.neighborhood || restaurant.city}
-                    rating={Number(restaurant.average_rating) || Number(restaurant.google_rating)}
+                    rating={Number(restaurant.average_rating) || Number(restaurant.google_rating || 0)}
                     reviewCount={restaurant.total_reviews}
                     rank={index + 1}
-                    isTrending={restaurant.tiktok_trend_score > 70}
+                    isTrending={(restaurant.tiktok_trend_score || 0) > 70}
+                    aiReason={restaurant.aiReason}
                   />
                 ))}
               </div>
