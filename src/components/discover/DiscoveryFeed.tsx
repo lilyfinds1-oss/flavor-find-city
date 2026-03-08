@@ -35,7 +35,7 @@ const mockFeedItems: FeedItem[] = [
     type: "restaurant",
     slug: "cafe-aylanto",
     title: "Cafe Aylanto",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
     rating: 4.8,
     reviewCount: 234,
     priceRange: "$$$",
@@ -50,7 +50,7 @@ const mockFeedItems: FeedItem[] = [
     type: "restaurant",
     slug: "bundu-khan",
     title: "Bundu Khan",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop",
     rating: 4.5,
     reviewCount: 567,
     priceRange: "$$",
@@ -64,7 +64,7 @@ const mockFeedItems: FeedItem[] = [
     type: "editorial",
     slug: "best-biryani-spots",
     title: "The Ultimate Guide to Lahore's Best Biryani",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&h=600&fit=crop",
     author: { name: "Sarah Khan", verified: true },
     aiContext: { reason: "Based on your preferences", icon: "preference" },
     size: "wide",
@@ -74,7 +74,7 @@ const mockFeedItems: FeedItem[] = [
     type: "restaurant",
     slug: "cosa-nostra",
     title: "Cosa Nostra",
-    image: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800",
+    image: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&h=600&fit=crop",
     rating: 4.7,
     reviewCount: 189,
     priceRange: "$$$$",
@@ -88,7 +88,7 @@ const mockFeedItems: FeedItem[] = [
     type: "restaurant",
     slug: "andaaz",
     title: "Andaaz Restaurant",
-    image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800",
+    image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop",
     rating: 4.6,
     reviewCount: 312,
     priceRange: "$$$",
@@ -102,7 +102,7 @@ const mockFeedItems: FeedItem[] = [
     slug: "lunch-deals",
     title: "Today's Lunch Specials",
     subtitle: "Up to 40% off at 15 restaurants",
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop",
     dealText: "Limited time",
     aiContext: { reason: "Ends in 3 hours", icon: "time" },
   },
@@ -111,7 +111,7 @@ const mockFeedItems: FeedItem[] = [
     type: "restaurant",
     slug: "monal-lahore",
     title: "Monal Lahore",
-    image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800",
+    image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800&h=600&fit=crop",
     rating: 4.4,
     reviewCount: 445,
     priceRange: "$$$",
@@ -125,7 +125,7 @@ const mockFeedItems: FeedItem[] = [
     type: "restaurant",
     slug: "haveli",
     title: "Haveli Restaurant",
-    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800",
+    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=600&fit=crop",
     rating: 4.3,
     reviewCount: 678,
     priceRange: "$$",
@@ -166,7 +166,7 @@ export function DiscoveryFeed({ searchQuery }: DiscoveryFeedProps) {
       <div className="max-w-6xl mx-auto">
         {/* Section header with filters */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
             {feedFilters.map((filter) => {
               const Icon = filter.icon;
               return (
@@ -174,13 +174,13 @@ export function DiscoveryFeed({ searchQuery }: DiscoveryFeedProps) {
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200",
+                    "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200",
                     activeFilter === filter.id
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                       : "bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground"
                   )}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   {filter.label}
                 </button>
               );
@@ -195,12 +195,12 @@ export function DiscoveryFeed({ searchQuery }: DiscoveryFeedProps) {
         {/* AI context banner */}
         {searchQuery && (
           <div className="glass rounded-xl p-4 mb-6 flex items-center gap-3 animate-fade-in-up">
-            <div className="w-10 h-10 rounded-xl bg-gradient-ai flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-ai flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm text-muted-foreground">Showing results for</p>
-              <p className="font-medium text-foreground">"{searchQuery}"</p>
+              <p className="font-medium text-foreground truncate">"{searchQuery}"</p>
             </div>
             <Button variant="ghost" size="sm">
               Clear
@@ -208,31 +208,28 @@ export function DiscoveryFeed({ searchQuery }: DiscoveryFeedProps) {
           </div>
         )}
 
-        {/* Feed grid - masonry-style layout */}
+        {/* Feed grid - consistent uniform grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-[16/10] rounded-2xl shimmer" />
+              <div key={i} className="aspect-[4/3] rounded-2xl shimmer" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {feedItems.map((item, index) => (
               <div
                 key={item.id}
                 className={cn(
                   "feed-item",
-                  item.size === "large" && "md:col-span-2 md:row-span-2",
-                  item.size === "wide" && "md:col-span-2"
+                  item.size === "large" && "sm:col-span-2 lg:col-span-1",
+                  item.size === "wide" && "sm:col-span-2 lg:col-span-1"
                 )}
                 style={{ animationDelay: `${index * 80}ms` }}
               >
                 <IntelligentTile
                   {...item}
-                  className={cn(
-                    item.size === "large" && "h-full",
-                    item.size === "wide" && "h-full"
-                  )}
+                  className="h-full"
                 />
               </div>
             ))}

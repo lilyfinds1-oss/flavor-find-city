@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, Save, User, Star, MessageSquare, Award, Loader2 } from "lucide-react";
 import { ReferralSection } from "@/components/profile/ReferralSection";
+import { BADGES, BadgeDisplay, getEarnedBadges, getProgress } from "@/components/gamification/BadgeSystem";
 
 interface Profile {
   id: string;
@@ -25,6 +26,8 @@ interface Profile {
   xp_points: number | null;
   total_reviews: number | null;
   total_votes: number | null;
+  total_photos: number | null;
+  total_referrals: number | null;
   is_verified_foodie: boolean | null;
 }
 
@@ -41,28 +44,17 @@ export default function ProfilePage() {
   const [location, setLocation] = useState("");
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
+    if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
+    if (user) fetchProfile();
   }, [user]);
 
   const fetchProfile = async () => {
     if (!user) return;
-    
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (error) {
-      console.error("Error fetching profile:", error);
       toast.error("Failed to load profile");
     } else if (data) {
       setProfile(data);
@@ -75,73 +67,30 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user) return;
-    
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({
-        display_name: displayName.trim() || null,
-        bio: bio.trim() || null,
-        location: location.trim() || null,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ display_name: displayName.trim() || null, bio: bio.trim() || null, location: location.trim() || null, updated_at: new Date().toISOString() })
       .eq("id", user.id);
-
-    if (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to save profile");
-    } else {
-      toast.success("Profile updated successfully!");
-      fetchProfile();
-    }
+    if (error) toast.error("Failed to save profile");
+    else { toast.success("Profile updated!"); fetchProfile(); }
     setSaving(false);
   };
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
-      return;
-    }
-
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
     setUploading(true);
     const fileExt = file.name.split(".").pop();
     const filePath = `${user.id}/avatar.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(filePath, file, { upsert: true });
-
-    if (uploadError) {
-      console.error("Error uploading avatar:", uploadError);
-      toast.error("Failed to upload avatar");
-      setUploading(false);
-      return;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(filePath);
-
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-      .eq("id", user.id);
-
-    if (updateError) {
-      console.error("Error updating avatar URL:", updateError);
-      toast.error("Failed to update profile");
-    } else {
-      toast.success("Avatar updated!");
-      fetchProfile();
-    }
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (uploadError) { toast.error("Upload failed"); setUploading(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: publicUrl, updated_at: new Date().toISOString() }).eq("id", user.id);
+    if (updateError) toast.error("Failed to update");
+    else { toast.success("Avatar updated!"); fetchProfile(); }
     setUploading(false);
   };
 
@@ -169,83 +118,80 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const roleBadge = getRoleBadge();
+  const stats = {
+    reviews: profile?.total_reviews || 0,
+    votes: profile?.total_votes || 0,
+    photos: profile?.total_photos || 0,
+    xp: profile?.xp_points || 0,
+    referrals: profile?.total_referrals || 0,
+  };
+  const earnedBadges = getEarnedBadges(stats);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 rounded-xl bg-primary/10">
-            <User className="w-8 h-8 text-primary" />
+      <main className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10">
+            <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-3xl font-bold">My Profile</h1>
-            <p className="text-muted-foreground">Manage your profile and settings</p>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">My Profile</h1>
+            <p className="text-muted-foreground text-sm">Manage your profile and settings</p>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {/* Avatar & Stats Card */}
           <Card className="md:col-span-1">
-            <CardHeader className="text-center">
+            <CardHeader className="text-center pb-3 sm:pb-6">
               <div className="relative mx-auto">
-                <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
+                <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-background shadow-lg">
                   <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
+                  <AvatarFallback className="text-xl sm:text-2xl font-bold bg-primary/10 text-primary">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90 transition-colors"
+                  className="absolute bottom-0 right-0 p-1.5 sm:p-2 rounded-full bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90 transition-colors"
                 >
-                  {uploading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Camera className="w-4 h-4" />
-                  )}
+                  {uploading ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                  disabled={uploading}
-                />
+                <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
               </div>
-              <CardTitle className="mt-4">{displayName || "Foodie"}</CardTitle>
-              <CardDescription>{user.email}</CardDescription>
-              <Badge variant={roleBadge.variant} className="mt-2">
+              <CardTitle className="mt-3 sm:mt-4 text-base sm:text-lg">{displayName || "Foodie"}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">{user.email}</CardDescription>
+              <Badge variant={roleBadge.variant} className="mt-2 text-xs">
                 {roleBadge.label}
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-secondary/50">
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-amber" />
-                    <span className="text-sm">XP Points</span>
+                    <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber" />
+                    <span className="text-xs sm:text-sm">XP Points</span>
                   </div>
-                  <span className="font-bold">{profile?.xp_points || 0}</span>
+                  <span className="font-bold text-sm">{stats.xp}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-secondary/50">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-primary" />
-                    <span className="text-sm">Reviews</span>
+                    <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                    <span className="text-xs sm:text-sm">Reviews</span>
                   </div>
-                  <span className="font-bold">{profile?.total_reviews || 0}</span>
+                  <span className="font-bold text-sm">{stats.reviews}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-secondary/50">
                   <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">Votes Given</span>
+                    <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
+                    <span className="text-xs sm:text-sm">Votes Given</span>
                   </div>
-                  <span className="font-bold">{profile?.total_votes || 0}</span>
+                  <span className="font-bold text-sm">{stats.votes}</span>
                 </div>
                 {profile?.is_verified_foodie && (
-                  <Badge variant="default" className="w-full justify-center">
+                  <Badge variant="default" className="w-full justify-center text-xs">
                     ✓ Verified Foodie
                   </Badge>
                 )}
@@ -255,56 +201,56 @@ export default function ProfilePage() {
 
           {/* Edit Profile Card */}
           <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Edit Profile</CardTitle>
-              <CardDescription>Update your public profile information</CardDescription>
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-base sm:text-lg">Edit Profile</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Update your public profile information</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input
-                  id="displayName"
-                  placeholder="Your display name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  maxLength={50}
-                />
+                <Label htmlFor="displayName" className="text-sm">Display Name</Label>
+                <Input id="displayName" placeholder="Your display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  placeholder="e.g., Lahore, Pakistan"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  maxLength={100}
-                />
+                <Label htmlFor="location" className="text-sm">Location</Label>
+                <Input id="location" placeholder="e.g., Lahore, Pakistan" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={100} />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Tell us about yourself and your food journey..."
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={4}
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground text-right">
-                  {bio.length}/500 characters
-                </p>
+                <Label htmlFor="bio" className="text-sm">Bio</Label>
+                <Textarea id="bio" placeholder="Tell us about yourself..." value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={500} />
+                <p className="text-[10px] sm:text-xs text-muted-foreground text-right">{bio.length}/500</p>
               </div>
-
               <Button onClick={handleSave} disabled={saving} className="w-full gap-2">
-                {saving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Badges Section */}
+          <Card className="md:col-span-3">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" />
+                Badges ({earnedBadges.length}/{BADGES.length})
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Earn badges by being active in the community</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4">
+                {BADGES.map((badge) => {
+                  const earned = earnedBadges.some(b => b.id === badge.id);
+                  const progress = getProgress(badge, stats);
+                  return (
+                    <BadgeDisplay
+                      key={badge.id}
+                      badge={badge}
+                      earned={earned}
+                      progress={progress}
+                      size="md"
+                    />
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
 

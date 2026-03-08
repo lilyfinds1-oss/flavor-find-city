@@ -30,10 +30,10 @@ export function LiveTrendingBar() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Trending searches */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-2 h-2 rounded-full bg-trending animate-pulse" />
-              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Trending in Lahore
               </span>
             </div>
@@ -43,14 +43,14 @@ export function LiveTrendingBar() {
                   key={item.id}
                   to={`/explore?q=${encodeURIComponent(item.title)}`}
                   className={cn(
-                    "group flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200",
+                    "group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all duration-200",
                     "bg-card border border-border/50 hover:border-trending/30 hover:bg-trending/5"
                   )}
                 >
-                  <span className="text-xs font-bold text-muted-foreground w-5">
+                  <span className="text-xs font-bold text-muted-foreground w-4 sm:w-5">
                     #{index + 1}
                   </span>
-                  <span className="text-sm font-medium text-foreground group-hover:text-trending transition-colors">
+                  <span className="text-xs sm:text-sm font-medium text-foreground group-hover:text-trending transition-colors">
                     {item.title}
                   </span>
                   {item.change === "new" && (
@@ -65,7 +65,7 @@ export function LiveTrendingBar() {
               ))}
               <Link
                 to="/explore"
-                className="flex items-center gap-1 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1 px-3 py-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 View all
                 <ArrowRight className="w-3 h-3" />
@@ -77,7 +77,7 @@ export function LiveTrendingBar() {
           <div className="lg:w-72 lg:border-l lg:border-border/50 lg:pl-6">
             <div className="flex items-center gap-2 mb-4">
               <MapPin className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Nearby
               </span>
             </div>
@@ -93,7 +93,7 @@ export function LiveTrendingBar() {
                       : "hover:bg-muted text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <span className="text-sm font-medium">{area.name}</span>
+                  <span className="text-xs sm:text-sm font-medium">{area.name}</span>
                   <span className="text-xs text-muted-foreground">{area.count} open</span>
                 </Link>
               ))}
@@ -101,10 +101,10 @@ export function LiveTrendingBar() {
           </div>
 
           {/* Time context */}
-          <div className="lg:w-48 lg:border-l lg:border-border/50 lg:pl-6">
+          <div className="hidden sm:block lg:w-48 lg:border-l lg:border-border/50 lg:pl-6">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Right now
               </span>
             </div>
