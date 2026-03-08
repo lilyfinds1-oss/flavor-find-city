@@ -6,12 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAdminReviews, useUpdateReviewStatus } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X, Clock, Star, MessageSquare, User } from "lucide-react";
+import { Check, X, Clock, Star, MessageSquare, User, ShieldAlert, Bug, ThumbsDown, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 
 type ReviewStatus = Database["public"]["Enums"]["review_status"];
+
+const categoryConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  clean: { label: "Clean", icon: Check, color: "bg-emerald-500/10 text-emerald-600" },
+  spam: { label: "Spam", icon: Bug, color: "bg-amber-500/10 text-amber-600" },
+  toxic: { label: "Toxic", icon: ShieldAlert, color: "bg-red-500/10 text-red-600" },
+  low_quality: { label: "Low Quality", icon: ThumbsDown, color: "bg-orange-500/10 text-orange-600" },
+  multi_issue: { label: "Multiple Issues", icon: ShieldAlert, color: "bg-red-500/10 text-red-600" },
+};
 
 export default function ReviewModerator() {
   const [activeTab, setActiveTab] = useState<ReviewStatus | "all">("pending");
@@ -27,22 +35,15 @@ export default function ReviewModerator() {
         description: "The review status has been updated.",
       });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
   const getStatusBadge = (status: ReviewStatus) => {
     switch (status) {
-      case "approved":
-        return <Badge className="bg-green-500">Approved</Badge>;
-      case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="secondary">Pending</Badge>;
+      case "approved": return <Badge className="bg-emerald-500 dark:bg-emerald-600">Approved</Badge>;
+      case "rejected": return <Badge variant="destructive">Rejected</Badge>;
+      default: return <Badge variant="secondary">Pending</Badge>;
     }
   };
 
@@ -69,18 +70,9 @@ export default function ReviewModerator() {
       <CardContent>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReviewStatus | "all")}>
           <TabsList className="mb-4">
-            <TabsTrigger value="pending" className="gap-2">
-              <Clock className="w-4 h-4" />
-              Pending
-            </TabsTrigger>
-            <TabsTrigger value="approved" className="gap-2">
-              <Check className="w-4 h-4" />
-              Approved
-            </TabsTrigger>
-            <TabsTrigger value="rejected" className="gap-2">
-              <X className="w-4 h-4" />
-              Rejected
-            </TabsTrigger>
+            <TabsTrigger value="pending" className="gap-2"><Clock className="w-4 h-4" />Pending</TabsTrigger>
+            <TabsTrigger value="approved" className="gap-2"><Check className="w-4 h-4" />Approved</TabsTrigger>
+            <TabsTrigger value="rejected" className="gap-2"><X className="w-4 h-4" />Rejected</TabsTrigger>
             <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
 
@@ -92,17 +84,12 @@ export default function ReviewModerator() {
               </div>
             ) : (
               reviews?.map((review: any) => (
-                <div
-                  key={review.id}
-                  className="border rounded-lg p-4 space-y-3"
-                >
+                <div key={review.id} className="border rounded-lg p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage src={review.profiles?.avatar_url} />
-                        <AvatarFallback>
-                          <User className="w-4 h-4" />
-                        </AvatarFallback>
+                        <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium">
@@ -117,55 +104,70 @@ export default function ReviewModerator() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Link
-                      to={`/restaurant/${review.restaurants?.slug}`}
-                      className="text-primary hover:underline font-medium"
-                    >
+                    <Link to={`/restaurant/${review.restaurants?.slug}`} className="text-primary hover:underline font-medium">
                       {review.restaurants?.name}
                     </Link>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < review.rating
-                              ? "text-yellow-500 fill-yellow-500"
-                              : "text-muted-foreground"
-                          }`}
-                        />
+                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground"}`} />
                       ))}
                     </div>
                   </div>
 
-                  {review.title && (
-                    <h4 className="font-semibold">{review.title}</h4>
-                  )}
+                  {review.title && <h4 className="font-semibold">{review.title}</h4>}
                   <p className="text-sm">{review.content}</p>
 
                   {review.photos?.length > 0 && (
                     <div className="flex gap-2 flex-wrap">
                       {review.photos.map((photo: string, i: number) => (
-                        <img
-                          key={i}
-                          src={photo}
-                          alt={`Review photo ${i + 1}`}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
+                        <img key={i} src={photo} alt={`Review photo ${i + 1}`} className="w-20 h-20 object-cover rounded-lg" />
                       ))}
                     </div>
                   )}
 
-                  {/* AI Moderation Info */}
+                  {/* AI Moderation Details */}
                   {(review.ai_quality_score != null || review.ai_moderation_notes) && (
-                    <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                    <div className="bg-muted/50 rounded-lg p-3 space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-xs uppercase tracking-wider text-muted-foreground">AI Assessment</span>
+                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                        <span className="font-medium text-xs uppercase tracking-wider text-muted-foreground">AI Moderation</span>
+                      </div>
+
+                      {/* Score badges */}
+                      <div className="flex flex-wrap gap-2">
                         {review.ai_quality_score != null && (
                           <Badge variant={review.ai_quality_score >= 70 ? "default" : review.ai_quality_score >= 40 ? "secondary" : "destructive"} className="text-xs">
-                            Score: {review.ai_quality_score}/100
+                            Quality: {review.ai_quality_score}/100
+                          </Badge>
+                        )}
+                        {review.ai_spam_score != null && (
+                          <Badge variant={review.ai_spam_score < 30 ? "secondary" : "destructive"} className="text-xs">
+                            Spam: {review.ai_spam_score}/100
+                          </Badge>
+                        )}
+                        {review.ai_toxic_score != null && (
+                          <Badge variant={review.ai_toxic_score < 20 ? "secondary" : "destructive"} className="text-xs">
+                            Toxic: {review.ai_toxic_score}/100
                           </Badge>
                         )}
                       </div>
+
+                      {/* Category badge */}
+                      {review.ai_moderation_category && categoryConfig[review.ai_moderation_category] && (
+                        <div className="flex items-center gap-1.5">
+                          {(() => {
+                            const cfg = categoryConfig[review.ai_moderation_category];
+                            const Icon = cfg.icon;
+                            return (
+                              <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${cfg.color}`}>
+                                <Icon className="w-3 h-3" />
+                                {cfg.label}
+                              </span>
+                            );
+                          })()}
+                        </div>
+                      )}
+
                       {review.ai_moderation_notes && (
                         <p className="text-muted-foreground text-xs">{review.ai_moderation_notes}</p>
                       )}
@@ -174,36 +176,18 @@ export default function ReviewModerator() {
 
                   {review.status === "pending" && (
                     <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleStatusChange(review.id, "approved")}
-                        disabled={updateStatus.isPending}
-                        className="gap-2"
-                      >
-                        <Check className="w-4 h-4" />
-                        Approve
+                      <Button size="sm" onClick={() => handleStatusChange(review.id, "approved")} disabled={updateStatus.isPending} className="gap-2">
+                        <Check className="w-4 h-4" />Approve
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleStatusChange(review.id, "rejected")}
-                        disabled={updateStatus.isPending}
-                        className="gap-2"
-                      >
-                        <X className="w-4 h-4" />
-                        Reject
+                      <Button size="sm" variant="destructive" onClick={() => handleStatusChange(review.id, "rejected")} disabled={updateStatus.isPending} className="gap-2">
+                        <X className="w-4 h-4" />Reject
                       </Button>
                     </div>
                   )}
 
                   {review.status !== "pending" && (
                     <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleStatusChange(review.id, "pending")}
-                        disabled={updateStatus.isPending}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => handleStatusChange(review.id, "pending")} disabled={updateStatus.isPending}>
                         Reset to Pending
                       </Button>
                     </div>
