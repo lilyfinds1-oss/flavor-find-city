@@ -10,6 +10,7 @@ import { TrendingNowSection } from "@/components/home/TrendingNowSection";
 import { DealsSection } from "@/components/home/DealsSection";
 import { NeighborhoodsSection } from "@/components/home/NeighborhoodsSection";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
+import { RestaurantOwnersSection } from "@/components/home/RestaurantOwnersSection";
 import { SEOHead } from "@/components/seo/SEOHead";
 
 const Index = () => {
@@ -35,6 +36,7 @@ const Index = () => {
         <TrendingNowSection />
         <RecentReviewsSection />
         <DealsSection />
+        <RestaurantOwnersSection />
         <NeighborhoodsSection />
         <div id="discovery-feed">
           <DiscoveryFeed searchQuery={searchQuery} />
