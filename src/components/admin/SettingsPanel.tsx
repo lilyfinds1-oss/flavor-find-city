@@ -365,6 +365,38 @@ export default function SettingsPanel() {
         ]}
       />
 
+      <ConfigTokenCard
+        title="Stripe Secret Key"
+        description="Enable payment processing for restaurant subscriptions"
+        icon={CreditCard}
+        configKey="stripe_secret_key"
+        placeholder="sk_live_..."
+        helpText="Get your API keys from"
+        helpUrl="https://dashboard.stripe.com/apikeys"
+        helpLabel="Stripe Dashboard"
+        integrationLabel="Stripe"
+        integrationDescription="Payments & subscriptions"
+        features={[
+          "Restaurant subscription billing (Starter & Growth plans)",
+          "Secure checkout via Stripe",
+          "Recurring monthly payments",
+          "Billing history & plan management",
+        ]}
+      />
+
+      <ConfigTokenCard
+        title="Stripe Publishable Key"
+        description="Client-side key for Stripe Elements and checkout"
+        icon={CreditCard}
+        configKey="stripe_publishable_key"
+        placeholder="pk_live_..."
+        helpText="Get your publishable key from"
+        helpUrl="https://dashboard.stripe.com/apikeys"
+        helpLabel="Stripe Dashboard"
+        integrationLabel="Stripe (Client)"
+        integrationDescription="Client-side payment forms"
+      />
+
       <AIModelSettings />
 
       {/* Embedding Generation */}
