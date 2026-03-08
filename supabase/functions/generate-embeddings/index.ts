@@ -16,11 +16,9 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const ai = await createAIProvider();
-
     const { restaurantId, batchAll } = await req.json();
 
     if (batchAll) {
-      // Batch mode: generate embeddings for all restaurants without one
       const { data: restaurants, error } = await supabase
         .from("restaurants")
         .select("id, name, description, short_description, neighborhood, cuisines, price_range, signature_dishes, popular_dishes, tags, ambience, is_halal, has_delivery, has_outdoor_seating, is_family_friendly")
@@ -42,26 +40,19 @@ serve(async (req) => {
         try {
           const text = buildRestaurantEmbeddingText(r);
           const embedding = await ai.generateEmbedding(text);
-
           const { error: updateError } = await supabase
             .from("restaurants")
             .update({ embedding: `[${embedding.join(",")}]` })
             .eq("id", r.id);
 
-          if (updateError) {
-            console.error(`Failed to save embedding for ${r.id}:`, updateError);
-            errors++;
-          } else {
-            processed++;
-          }
+          if (updateError) { console.error(`Failed to save embedding for ${r.id}:`, updateError); errors++; }
+          else { processed++; }
 
-          // Small delay to avoid rate limits
           await new Promise((resolve) => setTimeout(resolve, 200));
         } catch (e) {
           console.error(`Error generating embedding for ${r.name}:`, e);
           errors++;
           if (e instanceof AIError && e.status === 429) {
-            // Wait longer on rate limit
             await new Promise((resolve) => setTimeout(resolve, 5000));
           }
         }
@@ -72,7 +63,6 @@ serve(async (req) => {
       });
     }
 
-    // Single restaurant mode
     if (!restaurantId) {
       return new Response(JSON.stringify({ error: "restaurantId or batchAll required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

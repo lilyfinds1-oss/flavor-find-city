@@ -41,6 +41,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_settings: {
+        Row: {
+          default_model: string
+          id: string
+          recommendation_model: string
+          updated_at: string
+          vision_model: string
+        }
+        Insert: {
+          default_model?: string
+          id?: string
+          recommendation_model?: string
+          updated_at?: string
+          vision_model?: string
+        }
+        Update: {
+          default_model?: string
+          id?: string
+          recommendation_model?: string
+          updated_at?: string
+          vision_model?: string
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           created_at: string
@@ -487,6 +511,9 @@ export type Database = {
       restaurants: {
         Row: {
           address: string
+          ai_description_long: string | null
+          ai_description_short: string | null
+          ai_vibe_tags: string[] | null
           ambience: string | null
           average_rating: number | null
           city: string
@@ -535,6 +562,9 @@ export type Database = {
         }
         Insert: {
           address: string
+          ai_description_long?: string | null
+          ai_description_short?: string | null
+          ai_vibe_tags?: string[] | null
           ambience?: string | null
           average_rating?: number | null
           city?: string
@@ -583,6 +613,9 @@ export type Database = {
         }
         Update: {
           address?: string
+          ai_description_long?: string | null
+          ai_description_short?: string | null
+          ai_vibe_tags?: string[] | null
           ambience?: string | null
           average_rating?: number | null
           city?: string
@@ -765,6 +798,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          entity_id: string | null
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

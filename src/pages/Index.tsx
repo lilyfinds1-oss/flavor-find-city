@@ -9,6 +9,7 @@ import { TopRatedSection } from "@/components/home/TopRatedSection";
 import { TrendingNowSection } from "@/components/home/TrendingNowSection";
 import { DealsSection } from "@/components/home/DealsSection";
 import { NeighborhoodsSection } from "@/components/home/NeighborhoodsSection";
+import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 import { SEOHead } from "@/components/seo/SEOHead";
 
 const Index = () => {
@@ -16,7 +17,6 @@ const Index = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    // Scroll to feed
     const feedSection = document.getElementById("discovery-feed");
     if (feedSection) {
       feedSection.scrollIntoView({ behavior: "smooth" });
@@ -30,6 +30,7 @@ const Index = () => {
       <main className="flex-1">
         <AIPromptHero onSearch={handleSearch} />
         <LiveTrendingBar />
+        <RecommendedForYou />
         <TopRatedSection />
         <TrendingNowSection />
         <RecentReviewsSection />

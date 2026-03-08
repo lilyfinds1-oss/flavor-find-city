@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain, Database, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MapPin, Key, Save, ExternalLink, CheckCircle, XCircle, Brain, Database, Loader2, Sparkles, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAppConfig, useUpdateAppConfig } from "@/hooks/useAppConfig";
 
@@ -25,7 +26,7 @@ function ConfigTokenCard({
   title: string;
   description: string;
   icon: React.ElementType;
-  configKey: "mapbox_public_token" | "openai_api_key";
+  configKey: string;
   placeholder: string;
   helpText?: string;
   helpUrl?: string;
@@ -34,7 +35,7 @@ function ConfigTokenCard({
   integrationLabel: string;
   integrationDescription: string;
 }) {
-  const { data: savedToken, isLoading } = useAppConfig(configKey);
+  const { data: savedToken, isLoading } = useAppConfig(configKey as any);
   const updateConfig = useUpdateAppConfig();
   const [token, setToken] = useState("");
 
@@ -48,7 +49,7 @@ function ConfigTokenCard({
       return;
     }
     try {
-      await updateConfig.mutateAsync({ key: configKey, value: token.trim() });
+      await updateConfig.mutateAsync({ key: configKey as any, value: token.trim() });
       toast.success(`${title} saved successfully`);
     } catch (error) {
       console.error("Failed to save token:", error);
@@ -134,9 +135,148 @@ function ConfigTokenCard({
   );
 }
 
+function AIModelSettings() {
+  const [settings, setSettings] = useState({
+    default_model: "gemini-1.5-flash",
+    vision_model: "gemini-1.5-pro",
+    recommendation_model: "gemini-1.5-pro",
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("ai_settings")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setSettings({
+          default_model: data.default_model,
+          vision_model: data.vision_model,
+          recommendation_model: data.recommendation_model,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to fetch AI settings:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { data: existing } = await supabase
+        .from("ai_settings")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("ai_settings")
+          .update({ ...settings, updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("ai_settings").insert(settings);
+      }
+      toast.success("AI model settings saved");
+    } catch (e) {
+      toast.error("Failed to save AI settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const models = [
+    { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash (Fast, Low Cost)" },
+    { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro (Advanced)" },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Settings className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle>AI Model Configuration</CardTitle>
+            <CardDescription>Choose which Gemini models power each AI feature</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label>Default Model</Label>
+            <p className="text-xs text-muted-foreground mb-1">Used for search, moderation, feed, descriptions</p>
+            <Select value={settings.default_model} onValueChange={(v) => setSettings(s => ({ ...s, default_model: v }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {models.map(m => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Vision Model</Label>
+            <p className="text-xs text-muted-foreground mb-1">Used for dish recognition from photos</p>
+            <Select value={settings.vision_model} onValueChange={(v) => setSettings(s => ({ ...s, vision_model: v }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {models.map(m => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Recommendation Model</Label>
+            <p className="text-xs text-muted-foreground mb-1">Used for personalized recommendations</p>
+            <Select value={settings.recommendation_model} onValueChange={(v) => setSettings(s => ({ ...s, recommendation_model: v }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {models.map(m => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-lg bg-muted/50 border border-dashed">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            Model Routing Strategy
+          </h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Flash</strong> → Search, moderation, discovery feed, descriptions (fast & cheap)</li>
+            <li>• <strong>Pro</strong> → Vision/dish recognition, personalized recommendations (advanced)</li>
+          </ul>
+        </div>
+
+        <Button onClick={handleSave} disabled={saving || loading} className="gap-2">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {saving ? "Saving..." : "Save Model Settings"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SettingsPanel() {
   const { data: mapboxToken } = useAppConfig("mapbox_public_token");
-  const { data: openaiToken } = useAppConfig("openai_api_key");
+  const { data: geminiToken } = useAppConfig("gemini_api_key" as any);
   const [generatingEmbeddings, setGeneratingEmbeddings] = useState(false);
   const [embeddingResult, setEmbeddingResult] = useState<string | null>(null);
 
@@ -167,10 +307,10 @@ export default function SettingsPanel() {
       configured: !!mapboxToken && mapboxToken.length > 0,
     },
     {
-      label: "OpenAI",
-      description: "AI search, moderation & recommendations",
+      label: "Google Gemini",
+      description: "AI search, vision, moderation & recommendations",
       icon: Brain,
-      configured: !!openaiToken && openaiToken.length > 0,
+      configured: !!geminiToken && geminiToken.length > 0,
     },
   ];
 
@@ -196,23 +336,26 @@ export default function SettingsPanel() {
       />
 
       <ConfigTokenCard
-        title="OpenAI Configuration"
-        description="Power AI search, moderation, embeddings & blog generation"
+        title="Google Gemini Configuration"
+        description="Power AI search, vision, moderation, embeddings & recommendations"
         icon={Brain}
-        configKey="openai_api_key"
-        placeholder="sk-..."
+        configKey="gemini_api_key"
+        placeholder="AIza..."
         helpText="Get your API key from"
-        helpUrl="https://platform.openai.com/api-keys"
-        helpLabel="OpenAI Dashboard"
-        integrationLabel="OpenAI"
-        integrationDescription="AI search, moderation & recommendations"
+        helpUrl="https://aistudio.google.com/app/apikey"
+        helpLabel="Google AI Studio"
+        integrationLabel="Google Gemini"
+        integrationDescription="AI search, vision & recommendations"
         features={[
-          "Semantic search with text-embedding-3-small",
-          "GPT-4o mini for ranking explanations & moderation",
+          "Semantic search with text-embedding-004",
+          "Gemini 1.5 Flash for ranking, moderation & descriptions",
+          "Gemini 1.5 Pro for vision (dish recognition) & recommendations",
           "AI-powered blog generation",
           "Review auto-moderation with quality scoring",
         ]}
       />
+
+      <AIModelSettings />
 
       {/* Embedding Generation */}
       <Card>
@@ -223,18 +366,19 @@ export default function SettingsPanel() {
             </div>
             <div>
               <CardTitle>Vector Embeddings</CardTitle>
-              <CardDescription>Generate embeddings for semantic search (requires OpenAI key)</CardDescription>
+              <CardDescription>Generate embeddings for semantic search (requires Gemini key)</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Generates vector embeddings for all restaurants that don't have one yet. This powers the hybrid semantic search system.
+            New restaurants automatically get embeddings via database triggers.
           </p>
           <div className="flex items-center gap-4">
             <Button
               onClick={handleGenerateEmbeddings}
-              disabled={generatingEmbeddings || !openaiToken}
+              disabled={generatingEmbeddings || !geminiToken}
               className="gap-2"
             >
               {generatingEmbeddings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
@@ -244,8 +388,8 @@ export default function SettingsPanel() {
               <span className="text-sm text-muted-foreground">{embeddingResult}</span>
             )}
           </div>
-          {!openaiToken && (
-            <p className="text-xs text-destructive">Configure your OpenAI API key above to enable embedding generation.</p>
+          {!geminiToken && (
+            <p className="text-xs text-destructive">Configure your Gemini API key above to enable embedding generation.</p>
           )}
         </CardContent>
       </Card>

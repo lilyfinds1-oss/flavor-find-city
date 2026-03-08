@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useEffect } from "react";
 import { Star, MapPin, Phone, Globe, Clock, Heart, Share2, Navigation, ChevronLeft, Award, Users, Utensils, CheckCircle } from "lucide-react";
 import { useIsSaved, useToggleSave } from "@/hooks/useSavedRestaurants";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +16,7 @@ import { ShareReview } from "@/components/reviews/ShareReview";
 import { ClaimRestaurant } from "@/components/restaurant/ClaimRestaurant";
 import { formatDistanceToNow } from "date-fns";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useTrackActivity } from "@/hooks/useUserActivity";
 
 function SaveButton({ restaurantId }: { restaurantId: string }) {
   const { user } = useAuth();
@@ -157,6 +159,14 @@ function ReviewsSection({ restaurantId, restaurantName, restaurantSlug }: { rest
 export default function RestaurantDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { data: restaurant, isLoading } = useRestaurant(slug || "");
+  const trackActivity = useTrackActivity();
+
+  // Track restaurant view
+  useEffect(() => {
+    if (restaurant?.id) {
+      trackActivity.mutate({ activityType: "viewed_restaurant", entityId: restaurant.id });
+    }
+  }, [restaurant?.id]);
 
   const handleGetDirections = () => {
     if (restaurant?.latitude && restaurant?.longitude) {
