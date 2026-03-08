@@ -12,7 +12,8 @@ import UserRoleManager from "@/components/admin/UserRoleManager";
 import DealsManager from "@/components/admin/DealsManager";
 import ClaimsManager from "@/components/admin/ClaimsManager";
 import BlogPostEditor from "@/components/admin/BlogPostEditor";
-import { Shield, Store, MessageSquare, BarChart3, Settings, Users, Ticket, Building2, FileText } from "lucide-react";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
+import { Shield, Store, MessageSquare, BarChart3, Settings, Users, Ticket, Building2, FileText, LineChart } from "lucide-react";
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth();
