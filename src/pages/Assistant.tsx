@@ -82,7 +82,8 @@ export default function Assistant() {
       const { data, error } = await supabase.functions.invoke("food-assistant", {
         body: { 
           messages: conversationHistory,
-          restaurants: restaurants?.slice(0, 20)
+          restaurants: restaurants?.slice(0, 20),
+          city: cityName
         },
       });
 
