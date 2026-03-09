@@ -47,7 +47,7 @@ export default function Deals() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="Deals & Coupons" description="Redeem exclusive restaurant deals in Lahore using your XP points. Earn rewards by reviewing and voting." />
+      <SEOHead title="Deals & Coupons" description="Redeem exclusive restaurant deals using your XP points. Earn rewards by reviewing and voting." />
       <Header />
       
       <main className="flex-1">
@@ -62,7 +62,7 @@ export default function Deals() {
               Deals & Coupons
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Use your XP points to unlock exclusive deals at top restaurants in Lahore. Earn more by reviewing and voting!
+              Use your XP points to unlock exclusive deals at top restaurants. Earn more by reviewing and voting!
             </p>
             <div className="mt-6 inline-flex items-center gap-2 bg-card rounded-full px-6 py-3 border border-border">
               <Ticket className="w-5 h-5 text-amber" />

@@ -3,8 +3,10 @@ import { Star, ChevronRight, Award } from "lucide-react";
 import { useTopRatedRestaurants } from "@/hooks/useTopRatedRestaurants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCity } from "@/contexts/CityContext";
 
 export function TopRatedSection() {
+  const { city } = useCity();
   const { data: restaurants, isLoading } = useTopRatedRestaurants(6);
 
   if (isLoading) {
@@ -18,7 +20,7 @@ export function TopRatedSection() {
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground">Top Rated</h2>
-                <p className="text-muted-foreground text-xs sm:text-sm">Lahore's highest-rated spots</p>
+                <p className="text-muted-foreground text-xs sm:text-sm">{city?.name || "Your city"}'s highest-rated spots</p>
               </div>
             </div>
           </div>
@@ -44,7 +46,7 @@ export function TopRatedSection() {
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">Top Rated</h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">Lahore's highest-rated spots</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">{city?.name || "Your city"}'s highest-rated spots</p>
             </div>
           </div>
           <Link to="/top-100">

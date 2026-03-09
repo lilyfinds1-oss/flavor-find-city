@@ -217,7 +217,7 @@ export default function ProfilePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location" className="text-sm">Location</Label>
-                <Input id="location" placeholder="e.g., Lahore, Pakistan" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={100} />
+                <Input id="location" placeholder="e.g., Karachi, Pakistan" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={100} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bio" className="text-sm">Bio</Label>
