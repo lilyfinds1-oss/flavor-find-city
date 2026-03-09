@@ -10,6 +10,7 @@ import { Trophy, Star, TrendingUp, Calendar, MessageSquare } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 interface TopReview {
   id: string;
@@ -114,6 +115,7 @@ export default function TopPosts() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title="Top Reviews" description="The most helpful restaurant reviews from the CityBites community each month." />
       <Header />
       
       <main className="flex-1">

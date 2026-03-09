@@ -38,7 +38,7 @@ const formSchema = z.object({
   slug: z.string().min(2, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase with hyphens"),
   description: z.string().optional(),
   address: z.string().min(5, "Address is required"),
-  city: z.string().default("Toronto"),
+  city: z.string().default("Lahore"),
   neighborhood: z.string().optional(),
   phone: z.string().optional(),
   website: z.string().url().optional().or(z.literal("")),

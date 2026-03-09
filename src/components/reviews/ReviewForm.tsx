@@ -26,7 +26,7 @@ export function ReviewForm({ restaurantId, restaurantName, onSuccess }: ReviewFo
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
-  const canWriteReview = roles.includes("writer") || roles.includes("moderator") || roles.includes("admin");
+  const canWriteReview = !!user; // All authenticated users can write reviews
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

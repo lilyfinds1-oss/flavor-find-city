@@ -18,6 +18,7 @@ import { SavedRestaurants } from "@/components/profile/SavedRestaurants";
 import { UserReviews } from "@/components/profile/UserReviews";
 import { PushNotificationToggle } from "@/components/layout/PushNotificationToggle";
 import { BADGES, BadgeDisplay, getEarnedBadges, getProgress } from "@/components/gamification/BadgeSystem";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 interface Profile {
   id: string;
@@ -132,6 +133,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="My Profile" description="Manage your CityBites profile, view badges, saved restaurants, and review history." />
       <Header />
       
       <main className="max-w-4xl mx-auto px-4 py-6 sm:py-8">

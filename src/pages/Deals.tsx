@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Gift, Clock, Ticket, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDeals, useUserXP, useRedeemDeal } from "@/hooks/useDeals";
@@ -45,6 +46,7 @@ export default function Deals() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title="Deals & Coupons" description="Redeem exclusive restaurant deals in Lahore using your XP points. Earn rewards by reviewing and voting." />
       <Header />
       
       <main className="flex-1">
