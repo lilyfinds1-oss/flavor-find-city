@@ -14,6 +14,7 @@ import { DishScanner } from "@/components/discover/DishScanner";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCity } from "@/contexts/CityContext";
 
 const priceRanges = ["$", "$$", "$$$", "$$$$"];
 const sortOptions = [
@@ -26,6 +27,7 @@ const sortOptions = [
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
+  const { city } = useCity();
   
   const search = searchParams.get("q") || "";
   const cuisine = searchParams.get("cuisine") || "";
@@ -71,7 +73,7 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="Explore Restaurants" description="Discover the best restaurants in Lahore. Filter by cuisine, neighborhood, price, and more." />
+      <SEOHead title={`Explore Restaurants in ${city?.name || "Pakistan"}`} description={`Discover the best restaurants in ${city?.name || "Pakistan"}. Filter by cuisine, neighborhood, price, and more.`} />
       <Header />
       
       <main className="flex-1">
@@ -81,9 +83,9 @@ export default function Explore() {
             <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">
               Explore Restaurants
             </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Discover {displayRestaurants?.length || 0}+ amazing places to eat in Lahore
-            </p>
+             <p className="text-muted-foreground text-sm sm:text-base">
+               Discover {displayRestaurants?.length || 0}+ amazing places to eat in {city?.name || "Pakistan"}
+             </p>
 
             {/* Search bar */}
             <div className="flex gap-2 mt-4 sm:mt-6 max-w-2xl">

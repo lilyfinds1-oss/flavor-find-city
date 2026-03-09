@@ -70,7 +70,7 @@ export default function MapPage() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <SEOHead title="Restaurant Map" description="Explore restaurants on an interactive map of Lahore. Filter by cuisine, price, and features." />
+      <SEOHead title="Restaurant Map" description="Explore restaurants on an interactive map. Filter by cuisine, price, and features." />
       <Header />
 
       <main className="flex-1 relative">
