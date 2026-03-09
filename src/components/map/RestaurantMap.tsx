@@ -240,7 +240,7 @@ export function RestaurantMap({
             <span class="text-xs font-medium">${Number(props?.rating || 0).toFixed(1)}</span>
             ${props?.trendScore >= 50 ? '<span class="ml-2 text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">🔥 Trending</span>' : ""}
           </div>
-          <p class="text-xs text-gray-400 mt-1">${props?.neighborhood || "Lahore"}</p>
+          <p class="text-xs text-gray-400 mt-1">${props?.neighborhood || ""}</p>
           <a href="/restaurant/${props?.slug}" class="text-xs text-orange-500 hover:underline mt-2 block">View Details →</a>
         </div>
       `;
