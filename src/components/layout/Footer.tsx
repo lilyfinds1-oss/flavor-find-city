@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Instagram, Twitter, Zap, ArrowUpRight } from "lucide-react";
+import { Instagram, Twitter, Zap, ArrowUpRight, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const footerLinks = {
   discover: [
@@ -27,6 +30,29 @@ const footerLinks = {
 };
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSubscribing(true);
+    const { error } = await supabase.from("newsletter_subscribers").insert({ email: email.trim() });
+    setSubscribing(false);
+    if (error) {
+      if (error.code === "23505") {
+        toast.info("You're already subscribed!");
+      } else {
+        toast.error("Failed to subscribe. Please try again.");
+      }
+    } else {
+      setSubscribed(true);
+      setEmail("");
+      toast.success("Subscribed! You'll get the best food finds weekly.");
+    }
+  };
+
   return (
     <footer className="relative border-t border-border/30 bg-card">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50 pointer-events-none" />
@@ -49,14 +75,26 @@ export function Footer() {
             <p className="text-muted-foreground text-sm mb-4 sm:mb-6">
               Curated recommendations, trending spots, and exclusive deals.
             </p>
-            <form className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 bg-muted/50 border-border/50 focus:border-primary/50"
-              />
-              <Button variant="hero" className="shrink-0">Subscribe</Button>
-            </form>
+            {subscribed ? (
+              <div className="flex items-center gap-2 text-success">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-medium">You're subscribed!</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="flex-1 bg-muted/50 border-border/50 focus:border-primary/50"
+                />
+                <Button variant="hero" className="shrink-0" disabled={subscribing}>
+                  {subscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
       </div>
