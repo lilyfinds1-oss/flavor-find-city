@@ -1,122 +1,91 @@
-# CityBites Launch Readiness Plan
 
-## Overview
-This plan addresses the gaps between the current implementation and a testable product for Lahore, Pakistan.
 
----
+# Recommended Additions for CityBites
 
-## ✅ Phase 1: Data Corrections — COMPLETE
-
-### 1.1 ✅ Update Restaurant Coordinates for Lahore
-All 20 restaurants updated with:
-- City: Lahore
-- Neighborhoods: Gulberg, DHA Phase 5, Johar Town, Model Town, etc.
-- Latitude/Longitude within Lahore bounds
-
-### 1.2 ✅ Seed Real Deals Data
-6 deals seeded and linked to restaurants:
-- The Smokehouse BBQ: 20% Off (500 XP)
-- Spice Garden: BOGO Biryani (750 XP)
-- Sakura Sushi: Free Miso Soup (200 XP)
-- Mediterranean Grill: Rs. 500 Off (600 XP)
-- Nonna Rosa Trattoria: 15% Off Italian (400 XP)
-- Seoul Kitchen: Free Korean Fried Chicken (850 XP)
+Based on a thorough review of the codebase, here is what is missing or could be improved, organized by impact:
 
 ---
 
-## ✅ Phase 2: Core Feature Completion — COMPLETE
+## High Priority -- Core UX Gaps
 
-### 2.1 ✅ Integrate Reviews into Restaurant Detail Page
-- Created `useRestaurantReviews.ts` hook
-- Integrated `ReviewForm` and `ReviewVoteButton` components
-- Reviews display with author avatars and voting
+### 1. Email Verification UX (already flagged as pending)
+After signup, users get no feedback about email verification. Add a "Check your email" banner on the Auth page post-signup, with a resend verification button.
 
-### 2.2 🔲 Implement Save to Favorites
- ### 2.2 ✅ Implement Save to Favorites
- - Created `useSavedRestaurants.ts` hook with:
-   - `useSavedRestaurants()` - Fetch user's saved restaurants
-   - `useIsSaved()` - Check if a restaurant is saved
-   - `useToggleSave()` - Toggle save/unsave with optimistic UI
- - Integrated into RestaurantDetail page with filled heart for saved state
+### 2. Saved Restaurants Page
+Users can save restaurants but there is **no page to view their saved list**. The Profile page shows stats but doesn't list saved restaurants. Add a "My Saved" section or tab on the Profile page that queries `saved_restaurants` and renders `RestaurantCard` components.
 
-### 2.3 ✅ Implement Get Directions
-- Added `handleGetDirections` function
-- Opens Google Maps with restaurant coordinates
+### 3. Password Reset Flow
+There is no "Forgot Password" link on the Auth page. Add a forgot password form that calls `supabase.auth.resetPasswordForEmail()` and a password update page.
 
-### 2.4 ✅ Connect Deals Page to Database
-- Created `useDeals.ts` hook with:
-  - `useDeals()` - Fetch active deals
-  - `useUserXP()` - Get user's XP balance
-  - `useRedeemDeal()` - Handle redemption with XP deduction
-- Updated Deals page to use real data
+### 4. Empty State Handling
+Several pages (Deals, Leaderboard, Blog) may show blank screens when data is empty. Add friendly empty states with calls-to-action.
 
 ---
 
-## 🔲 Phase 3: Admin Tools — PENDING
+## Medium Priority -- Engagement & Retention
 
- ## ✅ Phase 3: Admin Tools — COMPLETE
+### 5. User Review History on Profile
+The Profile page shows `total_reviews` count but doesn't display the user's actual reviews. Add a "My Reviews" section fetching from the `reviews` table filtered by `user_id`.
 
- ### 3.1 ✅ User Role Management Panel
- - Created `UserRoleManager.tsx` component
- - Lists profiles with current roles
- - Allows admins to add/remove writer and moderator roles
- - Search functionality included
- 
- ### 3.2 ✅ Deals Management Panel
- - Created `DealsManager.tsx` component
- - Full CRUD for deals with dialog form
- - Linked to restaurants with selector
+### 6. Neighborhood Filtering on Explore/Map
+The Explore page has cuisine and price filters but no **neighborhood dropdown**. The data exists (`neighborhood` column on restaurants). Wire it up as a filter.
 
----
+### 7. Push Notification Triggers
+`PushNotificationToggle` component exists but there are no backend triggers sending notifications when, e.g., a deal goes live, a review gets approved, or XP is earned. Add edge functions or database triggers to create entries in the `notifications` table for key events.
 
-## 🔲 Phase 4: Dynamic Data — PENDING
-
- ## ✅ Phase 4: Dynamic Data — COMPLETE
- 
- ### 4.1 ✅ Real Leaderboard
- - Created `useLeaderboard.ts` hook
- - Queries profiles ordered by xp_points DESC
- - Dynamic badge assignment based on XP thresholds
- - Supports user avatars with fallback emojis
+### 8. Social Sharing for Restaurants
+`ShareReview` exists but there is no share button on the restaurant detail page hero. Add Web Share API / copy-link for restaurant pages.
 
 ---
 
-## ✅ Phase 5: UX Polish — COMPLETE
+## Lower Priority -- Polish & Growth
 
-### 5.1 ✅ Fix City References
-Updated to "Lahore" in:
-- src/pages/Explore.tsx
-- src/pages/Top100.tsx
-- src/pages/Leaderboard.tsx
-- src/pages/RestaurantDetail.tsx (city rank badge)
+### 9. Onboarding Flow for New Users
+After signup, users land on the homepage with no guidance. A brief onboarding wizard (pick favorite cuisines, neighborhoods) would improve personalization and the AI recommendations.
 
-Note: SettingsPanel.tsx already references Lahore
+### 10. Google OAuth Sign-In
+Currently only email/password auth. Adding Google OAuth would reduce signup friction significantly, especially for mobile users.
 
-### 5.2 🔲 Email Verification UX — PENDING
-- Show "Check your email" banner
-- Add resend verification button
+### 11. Restaurant Photo Gallery
+Restaurant detail pages show a single `cover_image`. The `photos` array column exists but isn't rendered. Add a photo gallery/lightbox.
 
----
-
-## Current Status: TESTABLE MVP ✅
-
-The critical path is complete:
-1. ✅ Restaurants have Lahore coordinates for Map functionality
-2. ✅ Reviews are integrated with voting
-3. ✅ City references updated to Lahore
-4. ✅ Deals page connected to real database
-5. ✅ Get Directions works
- 6. ✅ Save to Favorites works
- 7. ✅ Admin User Role Manager implemented
- 8. ✅ Admin Deals Manager implemented
- 9. ✅ Real Leaderboard with database data
-
-**Ready for initial testing!**
+### 12. Admin Analytics -- Real Charts
+The `AnalyticsDashboard` component exists but likely uses placeholder data. Connect it to real queries (signups over time, reviews per week, top restaurants by engagement).
 
 ---
 
-## Remaining Nice-to-Have Items
+## Technical Debt
 
-| Feature | Priority | Effort |
-|---------|----------|--------|
-| Email Verification UX | Low | ~1 hour |
+### 13. No Global Error Boundary
+If a component crashes, the whole app goes white. Add a React error boundary with a user-friendly fallback.
+
+### 14. No Loading Skeletons
+Most pages show a spinner while loading. Replace with skeleton loaders for a more polished feel.
+
+### 15. SEO -- Missing Meta Tags on Several Pages
+`SEOHead` component exists but isn't used on all pages (Deals, Leaderboard, Map, etc.).
+
+---
+
+## Summary Table
+
+| # | Feature | Impact | Effort |
+|---|---------|--------|--------|
+| 1 | Email Verification UX | High | Small |
+| 2 | Saved Restaurants Page | High | Small |
+| 3 | Password Reset Flow | High | Small |
+| 4 | Empty State Handling | Medium | Small |
+| 5 | User Review History | Medium | Small |
+| 6 | Neighborhood Filter | Medium | Small |
+| 7 | Push Notification Triggers | Medium | Medium |
+| 8 | Social Sharing for Restaurants | Medium | Small |
+| 9 | Onboarding Flow | Medium | Medium |
+| 10 | Google OAuth | High | Medium |
+| 11 | Restaurant Photo Gallery | Low | Small |
+| 12 | Real Analytics Charts | Low | Medium |
+| 13 | Error Boundary | Medium | Small |
+| 14 | Skeleton Loaders | Low | Medium |
+| 15 | SEO Meta Tags | Low | Small |
+
+Pick any of these to tackle next, or I can implement a batch of the quick wins (1-6) together.
+
