@@ -111,7 +111,7 @@ export default function Assistant() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="AI Food Assistant" description="Ask our AI assistant for personalized restaurant recommendations in Lahore based on your mood, cravings, or occasion." />
+      <SEOHead title="AI Food Assistant" description={`Ask our AI assistant for personalized restaurant recommendations in ${cityName} based on your mood, cravings, or occasion.`} />
       <Header />
       
       <main className="flex-1 flex flex-col">
@@ -170,7 +170,7 @@ export default function Assistant() {
             <div className="px-4 pb-4">
               <p className="text-xs text-muted-foreground mb-3 text-center">Try asking</p>
               <div className="flex flex-wrap justify-center gap-2">
-                {quickPrompts.map((prompt, i) => (
+                {getQuickPrompts(cityName).map((prompt, i) => (
                   <button
                     key={i}
                     onClick={() => handleSend(prompt.text)}
