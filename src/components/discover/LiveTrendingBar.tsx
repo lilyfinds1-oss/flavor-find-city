@@ -14,7 +14,7 @@ interface TrendingItem {
 const trendingItems: TrendingItem[] = [
   { id: "1", title: "Late night biryani spots", count: 2340, change: "up" },
   { id: "2", title: "Rooftop restaurants", count: 1890, change: "new" },
-  { id: "3", title: "Best paratha in Lahore", count: 1567, change: "up" },
+  { id: "3", title: "Best paratha nearby", count: 1567, change: "up" },
   { id: "4", title: "Hidden gems DHA", count: 1234, change: "up" },
   { id: "5", title: "Authentic Chinese", count: 987, change: "new" },
 ];
@@ -26,6 +26,7 @@ const nearbyHighlights = [
 ];
 
 export function LiveTrendingBar() {
+  const { city } = useCity();
   return (
     <section className="py-6 border-y border-border/50 bg-muted/30">
       <div className="max-w-6xl mx-auto px-4">
@@ -35,7 +36,7 @@ export function LiveTrendingBar() {
             <div className="flex items-center gap-2 mb-4">
               <div className="w-2 h-2 rounded-full bg-trending animate-pulse" />
               <span className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Trending in Lahore
+                Trending in {city?.name || "Pakistan"}
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
