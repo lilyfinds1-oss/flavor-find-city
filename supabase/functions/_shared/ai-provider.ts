@@ -87,11 +87,19 @@ export async function getAISettings() {
 
 export async function createAIProvider(): Promise<AIProvider> {
   const geminiKey = await getGeminiKey();
-  if (!geminiKey) {
-    throw new Error("Gemini API key not configured. Add it in Admin → Settings → Gemini Configuration.");
-  }
   const settings = await getAISettings();
-  return createGeminiProvider(geminiKey, settings);
+  
+  if (geminiKey) {
+    // Use direct Gemini API when configured
+    return createGeminiProvider(geminiKey, settings);
+  } else {
+    // Fall back to Lovable AI Gateway
+    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableKey) {
+      throw new Error("No AI provider available. Configure Gemini API key in Admin → Settings or ensure Lovable AI is enabled.");
+    }
+    return createLovableProvider(lovableKey, settings);
+  }
 }
 
 function mapRole(role: string): string {
