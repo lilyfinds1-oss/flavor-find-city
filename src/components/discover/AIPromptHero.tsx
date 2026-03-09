@@ -67,7 +67,7 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
   };
 
   return (
-    <section className="relative min-h-[68vh] sm:min-h-[75vh] flex flex-col items-center justify-center px-4 pt-16 pb-12 sm:pt-24 sm:pb-20 overflow-hidden">
+    <section className="relative min-h-[75vh] sm:min-h-[80vh] flex flex-col items-center justify-center px-4 pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
       {/* Background ambient effects */}
       <div className="absolute inset-0 bg-gradient-hero" />
       <div className="absolute top-1/4 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse-glow" />
@@ -176,9 +176,9 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
       </div>
 
       {/* Scroll indicator - hidden on mobile */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 text-muted-foreground animate-bounce-subtle">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 text-muted-foreground animate-bounce-subtle">
         <span className="text-xs uppercase tracking-wider">Discover</span>
-        <div className="w-px h-8 bg-gradient-to-b from-muted-foreground/50 to-transparent" />
+        <div className="w-px h-6 bg-gradient-to-b from-muted-foreground/50 to-transparent" />
       </div>
     </section>
   );
