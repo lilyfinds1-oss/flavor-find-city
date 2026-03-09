@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Mail, Lock, User, ArrowLeft, Zap, Sparkles } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, Zap, Sparkles, CheckCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,8 @@ import { SEOHead } from "@/components/seo/SEOHead";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -26,7 +28,14 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isForgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast({ title: "Check your email", description: "We sent you a password reset link." });
+        setIsForgotPassword(false);
+      } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "Welcome back!", description: "You're now signed in." });
@@ -41,7 +50,7 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        toast({ title: "Check your email", description: "We sent you a verification link." });
+        setSignupSuccess(true);
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -66,7 +75,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <SEOHead title={isLogin ? "Sign In" : "Create Account"} description="Sign in to CityBites to discover restaurants, write reviews, and earn XP." />
+      <SEOHead title={isForgotPassword ? "Forgot Password" : isLogin ? "Sign In" : "Create Account"} description="Sign in to CityBites to discover restaurants, write reviews, and earn XP." />
       {/* Left side - Form */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-16 relative">
         {/* Background effects */}
@@ -92,17 +101,44 @@ export default function Auth() {
             </span>
           </div>
 
+          {/* Signup success banner */}
+          {signupSuccess && (
+            <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 mb-6 animate-fade-in-up">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-sm text-foreground">Check your email!</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    We sent a verification link to <strong>{email}</strong>. Click it to activate your account.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      await supabase.auth.resend({ type: "signup", email });
+                      toast({ title: "Email resent!", description: "Check your inbox again." });
+                    }}
+                    className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline mt-2"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Resend verification email
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <h1 className="font-display text-3xl font-bold text-foreground mb-2 animate-fade-in-up">
-            {isLogin ? "Welcome back" : "Join CityBites"}
+            {isForgotPassword ? "Reset password" : isLogin ? "Welcome back" : "Join CityBites"}
           </h1>
           <p className="text-muted-foreground mb-8 animate-fade-in-up" style={{ animationDelay: "50ms" }}>
-            {isLogin 
-              ? "Sign in to continue your food journey" 
-              : "Create an account to discover, review, and earn"}
+            {isForgotPassword
+              ? "Enter your email and we'll send you a reset link"
+              : isLogin 
+                ? "Sign in to continue your food journey" 
+                : "Create an account to discover, review, and earn"}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-            {!isLogin && (
+            {!isLogin && !isForgotPassword && (
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                 <div className="relative">
@@ -136,22 +172,35 @@ export default function Auth() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  className="pl-11 h-12 bg-muted/50 border-border/50 focus:border-primary/50 rounded-xl" 
-                  required 
-                  minLength={6} 
-                />
+            {!isForgotPassword && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(true)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    className="pl-11 h-12 bg-muted/50 border-border/50 focus:border-primary/50 rounded-xl" 
+                    required 
+                    minLength={6} 
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <Button 
               type="submit" 
@@ -162,6 +211,8 @@ export default function Auth() {
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : isForgotPassword ? (
+                "Send Reset Link"
               ) : isLogin ? (
                 "Sign In"
               ) : (
@@ -196,13 +247,21 @@ export default function Auth() {
           </Button>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button 
-              onClick={() => setIsLogin(!isLogin)} 
-              className="text-primary font-medium hover:underline"
-            >
-              {isLogin ? "Sign up" : "Sign in"}
-            </button>
+            {isForgotPassword ? (
+              <button onClick={() => setIsForgotPassword(false)} className="text-primary font-medium hover:underline">
+                ← Back to Sign In
+              </button>
+            ) : (
+              <>
+                {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+                <button 
+                  onClick={() => { setIsLogin(!isLogin); setSignupSuccess(false); }} 
+                  className="text-primary font-medium hover:underline"
+                >
+                  {isLogin ? "Sign up" : "Sign in"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
