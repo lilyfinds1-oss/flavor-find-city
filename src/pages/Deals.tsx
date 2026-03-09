@@ -3,6 +3,7 @@ import { Gift, Clock, Ticket, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDeals, useUserXP, useRedeemDeal } from "@/hooks/useDeals";
@@ -81,7 +82,18 @@ export default function Deals() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="bg-card rounded-2xl h-80 animate-pulse" />
+                <div key={i} className="bg-card rounded-2xl overflow-hidden border border-border">
+                  <Skeleton className="h-48 w-full rounded-none" />
+                  <div className="p-5 space-y-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-full" />
+                    <div className="flex justify-between pt-3">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-8 w-20 rounded-md" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : deals && deals.length > 0 ? (

@@ -12,6 +12,8 @@ import { useRestaurants, useCategories, useNeighborhoods } from "@/hooks/useRest
 import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
 import { DishScanner } from "@/components/discover/DishScanner";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const priceRanges = ["$", "$$", "$$$", "$$$$"];
 const sortOptions = [
@@ -69,6 +71,7 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title="Explore Restaurants" description="Discover the best restaurants in Lahore. Filter by cuisine, neighborhood, price, and more." />
       <Header />
       
       <main className="flex-1">
@@ -214,7 +217,17 @@ export default function Explore() {
           {displayLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-card rounded-2xl h-72 sm:h-80 animate-pulse" />
+                <div key={i} className="bg-card rounded-2xl overflow-hidden border border-border">
+                  <Skeleton className="h-40 sm:h-48 w-full rounded-none" />
+                  <div className="p-4 space-y-3">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                      <Skeleton className="h-5 w-12 rounded-full" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : displayRestaurants && displayRestaurants.length > 0 ? (

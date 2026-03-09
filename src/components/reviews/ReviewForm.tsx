@@ -17,7 +17,7 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ restaurantId, restaurantName, onSuccess }: ReviewFormProps) {
-  const { user, roles } = useAuth();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [rating, setRating] = useState(0);
