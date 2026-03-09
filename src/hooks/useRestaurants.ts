@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCity } from "@/contexts/CityContext";
 
 export type Restaurant = {
   id: string;
@@ -41,14 +42,22 @@ export function useRestaurants(options?: {
   isHalal?: boolean;
   sortBy?: "ranking" | "rating" | "reviews" | "trending";
   search?: string;
+  city?: string; // override city filter
 }) {
+  const { city } = useCity();
+  const cityName = options?.city || city?.name;
+
   return useQuery({
-    queryKey: ["restaurants", options],
+    queryKey: ["restaurants", options, cityName],
     queryFn: async () => {
       let query = supabase
         .from("restaurants")
         .select("*")
         .eq("is_active", true);
+
+      if (cityName) {
+        query = query.eq("city", cityName);
+      }
 
       if (options?.cuisine) {
         query = query.contains("cuisines", [options.cuisine]);
@@ -70,7 +79,6 @@ export function useRestaurants(options?: {
         query = query.or(`name.ilike.%${options.search}%,neighborhood.ilike.%${options.search}%`);
       }
 
-      // Sort
       switch (options?.sortBy) {
         case "rating":
           query = query.order("average_rating", { ascending: false });
@@ -90,10 +98,10 @@ export function useRestaurants(options?: {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       return data as Restaurant[];
     },
+    enabled: !!cityName,
   });
 }
 
@@ -116,19 +124,26 @@ export function useRestaurant(slug: string) {
 }
 
 export function useTopRestaurants(limit = 100) {
+  const { city } = useCity();
   return useQuery({
-    queryKey: ["top-restaurants", limit],
+    queryKey: ["top-restaurants", limit, city?.name],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("restaurants")
         .select("*")
         .eq("is_active", true)
         .order("ranking_score", { ascending: false })
         .limit(limit);
 
+      if (city?.name) {
+        query = query.eq("city", city.name);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as Restaurant[];
     },
+    enabled: !!city,
   });
 }
 
@@ -148,18 +163,30 @@ export function useCategories() {
 }
 
 export function useNeighborhoods() {
+  const { city } = useCity();
   return useQuery({
-    queryKey: ["neighborhoods"],
+    queryKey: ["neighborhoods", city?.slug],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Return neighborhoods from city data if available
+      if (city?.neighborhoods && city.neighborhoods.length > 0) {
+        return city.neighborhoods.sort();
+      }
+      // Fallback: query from restaurants
+      let query = supabase
         .from("restaurants")
         .select("neighborhood")
         .eq("is_active", true)
         .not("neighborhood", "is", null);
 
+      if (city?.name) {
+        query = query.eq("city", city.name);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       const unique = [...new Set(data.map((r) => r.neighborhood).filter(Boolean))] as string[];
       return unique.sort();
     },
+    enabled: !!city,
   });
 }
