@@ -11,6 +11,7 @@ import { DealsSection } from "@/components/home/DealsSection";
 import { NeighborhoodsSection } from "@/components/home/NeighborhoodsSection";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 import { RestaurantOwnersSection } from "@/components/home/RestaurantOwnersSection";
+import { TrendingDiscussions } from "@/components/community/TrendingDiscussions";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useAuth } from "@/hooks/useAuth";
@@ -63,6 +64,7 @@ const Index = () => {
         <TrendingNowSection />
         <RecentReviewsSection />
         <DealsSection />
+        <TrendingDiscussions />
         <RestaurantOwnersSection />
         <NeighborhoodsSection />
         <div id="discovery-feed">
