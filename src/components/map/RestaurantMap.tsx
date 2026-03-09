@@ -272,6 +272,16 @@ export function RestaurantMap({
     });
   }, [restaurants, mapLoaded, onMarkerClick]);
 
+  // Re-center map when city changes
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !city) return;
+    map.current.flyTo({
+      center: [Number(city.longitude), Number(city.latitude)],
+      zoom: city.default_zoom || DEFAULT_ZOOM,
+      essential: true,
+    });
+  }, [city?.id, mapLoaded]);
+
   // Fly to selected restaurant
   useEffect(() => {
     if (!map.current || !mapLoaded || !selectedRestaurantId) return;
