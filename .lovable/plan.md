@@ -1,122 +1,54 @@
-# CityBites Launch Readiness Plan
 
-## Overview
-This plan addresses the gaps between the current implementation and a testable product for Lahore, Pakistan.
+## Codebase Audit: Issues Found
 
----
+After reviewing the app comprehensively, I found **4 remaining hardcoded location references** that need to be fixed:
 
-## ✅ Phase 1: Data Corrections — COMPLETE
+### 1. Hardcoded "Lahore" in Frontend (3 files)
 
-### 1.1 ✅ Update Restaurant Coordinates for Lahore
-All 20 restaurants updated with:
-- City: Lahore
-- Neighborhoods: Gulberg, DHA Phase 5, Johar Town, Model Town, etc.
-- Latitude/Longitude within Lahore bounds
+**src/pages/Leaderboard.tsx** (lines 35, 67)
+- SEOHead description says "See the top foodies in **Lahore**..."
+- Should be dynamic using city context
 
-### 1.2 ✅ Seed Real Deals Data
-6 deals seeded and linked to restaurants:
-- The Smokehouse BBQ: 20% Off (500 XP)
-- Spice Garden: BOGO Biryani (750 XP)
-- Sakura Sushi: Free Miso Soup (200 XP)
-- Mediterranean Grill: Rs. 500 Off (600 XP)
-- Nonna Rosa Trattoria: 15% Off Italian (400 XP)
-- Seoul Kitchen: Free Korean Fried Chicken (850 XP)
+**src/pages/Assistant.tsx** (lines 28, 39, 110)
+- Quick prompt: "Best biryani in **Lahore**"
+- Intro message: "...I'll find the perfect spot for you in **Lahore**"
+- SEOHead description: "...recommendations in **Lahore** based on..."
+- Should use `useCity()` hook for dynamic city name
 
----
+### 2. Hardcoded "Toronto" in Edge Function
 
-## ✅ Phase 2: Core Feature Completion — COMPLETE
+**supabase/functions/food-assistant/index.ts** (lines 23, 28)
+- Restaurant context says "Available restaurants in **Toronto**"
+- System prompt says "...restaurant discovery app in **Toronto**"
+- Should accept city parameter from frontend or use "Pakistan" generically
 
-### 2.1 ✅ Integrate Reviews into Restaurant Detail Page
-- Created `useRestaurantReviews.ts` hook
-- Integrated `ReviewForm` and `ReviewVoteButton` components
-- Reviews display with author avatars and voting
+### 3. Hardcoded "Lahore" in Edge Function
 
-### 2.2 🔲 Implement Save to Favorites
- ### 2.2 ✅ Implement Save to Favorites
- - Created `useSavedRestaurants.ts` hook with:
-   - `useSavedRestaurants()` - Fetch user's saved restaurants
-   - `useIsSaved()` - Check if a restaurant is saved
-   - `useToggleSave()` - Toggle save/unsave with optimistic UI
- - Integrated into RestaurantDetail page with filled heart for saved state
-
-### 2.3 ✅ Implement Get Directions
-- Added `handleGetDirections` function
-- Opens Google Maps with restaurant coordinates
-
-### 2.4 ✅ Connect Deals Page to Database
-- Created `useDeals.ts` hook with:
-  - `useDeals()` - Fetch active deals
-  - `useUserXP()` - Get user's XP balance
-  - `useRedeemDeal()` - Handle redemption with XP deduction
-- Updated Deals page to use real data
+**supabase/functions/ai-generate-restaurant-description/index.ts** (line 54)
+- System prompt says "...discovery platform in **Lahore, Pakistan**"
+- Should use the restaurant's city field or "Pakistan" generically
 
 ---
 
-## 🔲 Phase 3: Admin Tools — PENDING
+## Proposed Fixes
 
- ## ✅ Phase 3: Admin Tools — COMPLETE
+### Frontend Pages (Assistant.tsx, Leaderboard.tsx)
+- Import and use `useCity()` hook
+- Replace hardcoded "Lahore" with `city?.name || "Pakistan"`
 
- ### 3.1 ✅ User Role Management Panel
- - Created `UserRoleManager.tsx` component
- - Lists profiles with current roles
- - Allows admins to add/remove writer and moderator roles
- - Search functionality included
- 
- ### 3.2 ✅ Deals Management Panel
- - Created `DealsManager.tsx` component
- - Full CRUD for deals with dialog form
- - Linked to restaurants with selector
+### Edge Functions (food-assistant, ai-generate-restaurant-description)
+- **food-assistant**: Accept optional `city` param from request body; update prompt to use it
+- **ai-generate-restaurant-description**: Use the restaurant's city from the database
 
 ---
 
-## 🔲 Phase 4: Dynamic Data — PENDING
+## Technical Summary
 
- ## ✅ Phase 4: Dynamic Data — COMPLETE
- 
- ### 4.1 ✅ Real Leaderboard
- - Created `useLeaderboard.ts` hook
- - Queries profiles ordered by xp_points DESC
- - Dynamic badge assignment based on XP thresholds
- - Supports user avatars with fallback emojis
+| File | Issue | Fix |
+|------|-------|-----|
+| `src/pages/Leaderboard.tsx` | "Lahore" in SEO | Use `useCity()` |
+| `src/pages/Assistant.tsx` | "Lahore" in SEO, prompts, intro | Use `useCity()` |
+| `food-assistant/index.ts` | "Toronto" in prompts | Accept city param |
+| `ai-generate-restaurant-description/index.ts` | "Lahore" in prompt | Use restaurant.city |
 
----
-
-## ✅ Phase 5: UX Polish — COMPLETE
-
-### 5.1 ✅ Fix City References
-Updated to "Lahore" in:
-- src/pages/Explore.tsx
-- src/pages/Top100.tsx
-- src/pages/Leaderboard.tsx
-- src/pages/RestaurantDetail.tsx (city rank badge)
-
-Note: SettingsPanel.tsx already references Lahore
-
-### 5.2 🔲 Email Verification UX — PENDING
-- Show "Check your email" banner
-- Add resend verification button
-
----
-
-## Current Status: TESTABLE MVP ✅
-
-The critical path is complete:
-1. ✅ Restaurants have Lahore coordinates for Map functionality
-2. ✅ Reviews are integrated with voting
-3. ✅ City references updated to Lahore
-4. ✅ Deals page connected to real database
-5. ✅ Get Directions works
- 6. ✅ Save to Favorites works
- 7. ✅ Admin User Role Manager implemented
- 8. ✅ Admin Deals Manager implemented
- 9. ✅ Real Leaderboard with database data
-
-**Ready for initial testing!**
-
----
-
-## Remaining Nice-to-Have Items
-
-| Feature | Priority | Effort |
-|---------|----------|--------|
-| Email Verification UX | Low | ~1 hour |
+Everything else looks good - navigation links work, map centers correctly on city switch, deals/restaurants filter by city, and the UI is responsive.
