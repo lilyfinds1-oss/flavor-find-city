@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { Star, MapPin, Phone, Globe, Clock, Heart, Share2, Navigation, ChevronLeft, Award, Users, Utensils, CheckCircle } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Clock, Heart, Navigation, ChevronLeft, Award, Users, Utensils, CheckCircle } from "lucide-react";
 import { useIsSaved, useToggleSave } from "@/hooks/useSavedRestaurants";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
@@ -13,6 +13,8 @@ import { useRestaurantReviews, useRefreshReviews } from "@/hooks/useRestaurantRe
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewVoteButton } from "@/components/reviews/ReviewVoteButton";
 import { ShareReview } from "@/components/reviews/ShareReview";
+import { ShareRestaurant } from "@/components/restaurant/ShareRestaurant";
+import { PhotoGallery } from "@/components/restaurant/PhotoGallery";
 import { ClaimRestaurant } from "@/components/restaurant/ClaimRestaurant";
 import { formatDistanceToNow } from "date-fns";
 import { SEOHead } from "@/components/seo/SEOHead";
@@ -249,9 +251,7 @@ export default function RestaurantDetail() {
 
           <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex gap-2">
             <SaveButton restaurantId={restaurant.id} />
-            <Button variant="glass" size="icon" className="w-9 h-9 sm:w-10 sm:h-10">
-              <Share2 className="w-5 h-5" />
-            </Button>
+            <ShareRestaurant name={restaurant.name} slug={restaurant.slug} description={restaurant.description} />
           </div>
 
           {restaurant.city_rank && restaurant.city_rank <= 100 && (
