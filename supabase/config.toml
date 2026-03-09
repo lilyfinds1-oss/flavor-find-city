@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.ai-restaurant-marketing]
 verify_jwt = false
+
+[functions.ai-moderate-community-post]
+verify_jwt = false

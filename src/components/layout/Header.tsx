@@ -22,6 +22,7 @@ const navLinks = [
   { href: "/explore", label: "Explore" },
   { href: "/top-100", label: "Top 100" },
   { href: "/deals", label: "Deals" },
+  { href: "/community", label: "Community" },
   { href: "/map", label: "Map" },
   { href: "/top-posts", label: "Reviews" },
   { href: "/blog", label: "Blog" },
