@@ -11,7 +11,8 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, restaurants } = await req.json();
+    const { messages, restaurants, city } = await req.json();
+    const cityName = city || "Pakistan";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -20,12 +21,12 @@ serve(async (req) => {
 
     // Build restaurant context for the AI
     const restaurantContext = restaurants?.length > 0 
-      ? `\n\nAvailable restaurants in Toronto:\n${restaurants.map((r: any) => 
+      ? `\n\nAvailable restaurants in ${cityName}:\n${restaurants.map((r: any) => 
           `- ${r.name} (${r.slug}): ${r.cuisines?.join(", ")} cuisine, ${r.price_range} price range, ${r.neighborhood} area, ${r.google_rating} rating${r.is_halal ? ", Halal" : ""}${r.has_delivery ? ", Delivery available" : ""}`
         ).join("\n")}`
       : "";
 
-    const systemPrompt = `You are a friendly and knowledgeable food assistant for CityBites, a restaurant discovery app in Toronto. Your job is to help users find the perfect restaurant based on their preferences.
+    const systemPrompt = `You are a friendly and knowledgeable food assistant for CityBites, a restaurant discovery app in ${cityName}. Your job is to help users find the perfect restaurant based on their preferences.
 
 When recommending restaurants, consider:
 - Budget/price range ($, $$, $$$, $$$$)

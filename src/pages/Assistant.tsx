@@ -8,6 +8,7 @@ import { useRestaurants } from "@/hooks/useRestaurants";
 import { ChatMessage } from "@/components/assistant/ChatMessage";
 import { cn } from "@/lib/utils";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useCity } from "@/contexts/CityContext";
 
 type Message = {
   id: string;

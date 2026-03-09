@@ -9,6 +9,7 @@ import { useLeaderboard, getBadgeFromXP, getAvatarEmoji } from "@/hooks/useLeade
 import { Loader2 } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCity } from "@/contexts/CityContext";
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Crown className="w-6 h-6 text-amber" />;
