@@ -145,3 +145,20 @@ export function useCategories() {
     },
   });
 }
+
+export function useNeighborhoods() {
+  return useQuery({
+    queryKey: ["neighborhoods"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("restaurants")
+        .select("neighborhood")
+        .eq("is_active", true)
+        .not("neighborhood", "is", null);
+
+      if (error) throw error;
+      const unique = [...new Set(data.map((r) => r.neighborhood).filter(Boolean))] as string[];
+      return unique.sort();
+    },
+  });
+}
