@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, BookOpen, CreditCard } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,14 +18,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navLinks = [
+const primaryNavLinks = [
   { href: "/explore", label: "Explore" },
   { href: "/top-100", label: "Top 100" },
-  { href: "/deals", label: "Deals" },
   { href: "/community", label: "Community" },
+  { href: "/deals", label: "Deals" },
+];
+
+const moreNavLinks = [
+  { href: "/map", label: "Map", icon: Map },
+  { href: "/top-posts", label: "Reviews", icon: Star },
+  { href: "/blog", label: "Blog", icon: BookOpen },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+];
+
+const allNavLinks = [
+  { href: "/explore", label: "Explore" },
+  { href: "/top-100", label: "Top 100" },
+  { href: "/community", label: "Community" },
+  { href: "/deals", label: "Deals" },
   { href: "/map", label: "Map" },
   { href: "/top-posts", label: "Reviews" },
   { href: "/blog", label: "Blog" },
+  { href: "/leaderboard", label: "Leaderboard" },
 ];
 
 export function Header() {
@@ -45,16 +60,17 @@ export function Header() {
     return user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   };
 
+  const isMoreActive = moreNavLinks.some((link) => location.pathname === link.href);
+
   return (
     <header className="sticky top-0 z-50 w-full glass-heavy border-b border-border/30">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group shrink-0">
           <div className="relative">
             <div className="w-9 h-9 rounded-xl bg-gradient-ai flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-ai/30 transition-shadow duration-300">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            {/* Subtle glow on hover */}
             <div className="absolute inset-0 rounded-xl bg-gradient-ai opacity-0 group-hover:opacity-30 blur-lg transition-opacity duration-300" />
           </div>
           <span className="font-display font-bold text-xl text-foreground tracking-tight">
@@ -63,13 +79,13 @@ export function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
+        <nav className="hidden lg:flex items-center gap-1">
+          {primaryNavLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
               className={cn(
-                "relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200",
+                "relative px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200",
                 location.pathname === link.href
                   ? "text-foreground bg-muted"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -81,15 +97,42 @@ export function Header() {
               )}
             </Link>
           ))}
+
+          {/* More dropdown for secondary nav items */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200",
+                  isMoreActive
+                    ? "text-foreground bg-muted"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                More
+                <ChevronDown className="w-3 h-3 opacity-50" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              {moreNavLinks.map((link) => (
+                <DropdownMenuItem key={link.href} asChild>
+                  <Link to={link.href} className="cursor-pointer">
+                    <link.icon className="w-4 h-4 mr-2" />
+                    {link.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* AI Assistant Button */}
           <Link to="/assistant" className="hidden sm:block">
             <Button variant="ai" size="sm" className="gap-2">
               <Sparkles className="w-4 h-4" />
-              <span className="hidden lg:inline">Ask AI</span>
+              <span className="hidden xl:inline">Ask AI</span>
             </Button>
           </Link>
 
@@ -112,9 +155,9 @@ export function Header() {
           {/* City Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5 text-muted-foreground hover:text-foreground px-2">
                 <MapPin className="w-3.5 h-3.5" />
-                <span className="text-sm">{city?.name || "Select City"}</span>
+                <span className="text-sm max-w-[80px] truncate">{city?.name || "City"}</span>
                 <ChevronDown className="w-3 h-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -142,7 +185,7 @@ export function Header() {
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 px-2 hover:bg-muted/50">
+                <Button variant="ghost" size="sm" className="gap-1.5 px-2 hover:bg-muted/50">
                   <Avatar className="w-8 h-8 border-2 border-border">
                     <AvatarImage src={user.user_metadata?.avatar_url} />
                     <AvatarFallback className="bg-gradient-primary text-white text-xs font-semibold">
@@ -164,12 +207,6 @@ export function Header() {
                   <Link to="/profile" className="cursor-pointer">
                     <User className="w-4 h-4 mr-2" />
                     My Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/leaderboard" className="cursor-pointer">
-                    <Trophy className="w-4 h-4 mr-2 text-accent" />
-                    Leaderboard
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -196,8 +233,8 @@ export function Header() {
                   </>
                 )}
                 <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuItem 
-                  onClick={() => signOut()} 
+                <DropdownMenuItem
+                  onClick={() => signOut()}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -218,7 +255,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon-sm"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -228,9 +265,9 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 glass-heavy border-b border-border/30 animate-slide-in-bottom">
+        <div className="lg:hidden absolute top-16 left-0 right-0 glass-heavy border-b border-border/30 animate-slide-in-bottom">
           <nav className="container py-4 flex flex-col gap-1">
-            {navLinks.map((link) => (
+            {allNavLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
