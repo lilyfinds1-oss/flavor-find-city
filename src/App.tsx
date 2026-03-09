@@ -29,6 +29,9 @@ import MenuAnalyzer from "./pages/MenuAnalyzer";
 import MarketingAssistant from "./pages/MarketingAssistant";
 import ResetPassword from "./pages/ResetPassword";
 import SelectCity from "./pages/SelectCity";
+import Community from "./pages/Community";
+import CommunityCreatePost from "./pages/CommunityCreatePost";
+import CommunityPostDetail from "./pages/CommunityPostDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +90,9 @@ function AnimatedRoutes() {
           <Route path="/ai-tools" element={<AIToolsDashboard />} />
           <Route path="/menu-analyzer" element={<MenuAnalyzer />} />
           <Route path="/marketing-assistant" element={<MarketingAssistant />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/community/create" element={<CommunityCreatePost />} />
+          <Route path="/community/post/:id" element={<CommunityPostDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
