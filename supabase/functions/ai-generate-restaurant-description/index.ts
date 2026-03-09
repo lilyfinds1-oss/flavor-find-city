@@ -57,7 +57,7 @@ serve(async (req) => {
           role: "user",
           content: `Generate descriptions for this restaurant:
 Name: ${restaurant.name}
-Location: ${restaurant.neighborhood || "Lahore"}
+Location: ${restaurant.neighborhood || restaurant.city || "Pakistan"}
 Cuisines: ${restaurant.cuisines?.join(", ") || "Various"}
 Price: ${restaurant.price_range || "$$"}
 Dishes: ${[...(restaurant.signature_dishes || []), ...(restaurant.popular_dishes || [])].join(", ") || "Various"}
