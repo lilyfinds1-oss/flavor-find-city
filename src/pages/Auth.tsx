@@ -18,13 +18,21 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get("ref");
 
+  const isCoolingDown = cooldownUntil !== null && Date.now() < cooldownUntil;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isCoolingDown) {
+      toast({ title: "Too many attempts", description: "Please wait 30 seconds before trying again.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -39,6 +47,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "Welcome back!", description: "You're now signed in." });
+        setFailedAttempts(0);
         navigate("/");
       } else {
         const { error } = await supabase.auth.signUp({
@@ -51,8 +60,15 @@ export default function Auth() {
         });
         if (error) throw error;
         setSignupSuccess(true);
+        setFailedAttempts(0);
       }
     } catch (error: any) {
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      if (newAttempts >= 3) {
+        setCooldownUntil(Date.now() + 30000);
+        setTimeout(() => { setCooldownUntil(null); setFailedAttempts(0); }, 30000);
+      }
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -207,7 +223,7 @@ export default function Auth() {
               variant="hero" 
               size="xl" 
               className="w-full" 
-              disabled={loading}
+              disabled={loading || isCoolingDown}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
