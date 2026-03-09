@@ -330,9 +330,12 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
+          favorite_cuisines: string[] | null
           id: string
           is_verified_foodie: boolean | null
           location: string | null
+          onboarding_completed: boolean | null
+          preferred_neighborhoods: string[] | null
           referral_code: string | null
           referred_by: string | null
           total_photos: number | null
@@ -348,9 +351,12 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          favorite_cuisines?: string[] | null
           id: string
           is_verified_foodie?: boolean | null
           location?: string | null
+          onboarding_completed?: boolean | null
+          preferred_neighborhoods?: string[] | null
           referral_code?: string | null
           referred_by?: string | null
           total_photos?: number | null
@@ -366,9 +372,12 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          favorite_cuisines?: string[] | null
           id?: string
           is_verified_foodie?: boolean | null
           location?: string | null
+          onboarding_completed?: boolean | null
+          preferred_neighborhoods?: string[] | null
           referral_code?: string | null
           referred_by?: string | null
           total_photos?: number | null
