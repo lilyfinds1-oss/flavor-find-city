@@ -32,9 +32,19 @@ export default function Leaderboard() {
    if (isLoading) {
      return (
        <div className="min-h-screen flex flex-col bg-background">
+         <SEOHead title="Leaderboard" description="See the top foodies in Lahore ranked by XP. Earn points by reviewing, voting, and sharing." />
          <Header />
-         <div className="flex-1 flex items-center justify-center">
-           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+         <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-12 space-y-4">
+           {Array.from({ length: 8 }).map((_, i) => (
+             <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
+               <Skeleton className="w-10 h-10 rounded-full" />
+               <div className="flex-1 space-y-2">
+                 <Skeleton className="h-4 w-32" />
+                 <Skeleton className="h-3 w-20" />
+               </div>
+               <Skeleton className="h-6 w-16 rounded-full" />
+             </div>
+           ))}
          </div>
          <Footer />
        </div>
@@ -54,6 +64,7 @@ export default function Leaderboard() {
  
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title="Leaderboard" description="See the top foodies in Lahore ranked by XP. Earn points by reviewing, voting, and sharing." />
       <Header />
       
       <main className="flex-1">
