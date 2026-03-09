@@ -19,6 +19,7 @@ export type Restaurant = {
   is_family_friendly: boolean;
   has_delivery: boolean;
   cover_image: string | null;
+  photos: string[] | null;
   signature_dishes: string[];
   google_rating: number;
   google_review_count: number;
