@@ -73,7 +73,7 @@ export default function Leaderboard() {
 
         {/* Top 3 Podium */}
         <div className="container py-8">
-           {topUsers.length >= 3 && (
+           {topUsers.length >= 3 ? (
            <div className="flex justify-center items-end gap-4 mb-12">
             {/* 2nd Place */}
             <div className="text-center">
@@ -133,7 +133,14 @@ export default function Leaderboard() {
               </div>
             </div>
           </div>
-           )}
+           ) : topUsers.length === 0 ? (
+            <div className="text-center py-16">
+              <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h2 className="font-display text-xl font-semibold mb-2">No rankings yet</h2>
+              <p className="text-muted-foreground mb-4">Be the first to earn XP by writing reviews!</p>
+              <Link to="/explore"><Button variant="hero">Start Reviewing</Button></Link>
+            </div>
+           ) : null}
 
           {/* Full Leaderboard */}
           <div className="max-w-2xl mx-auto">
