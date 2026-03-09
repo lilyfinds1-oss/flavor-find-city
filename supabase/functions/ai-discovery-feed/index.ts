@@ -100,7 +100,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a restaurant discovery AI for CityBites in Lahore, Pakistan. Rank and annotate these pre-filtered feed items. Each item needs an "aiReason" (max 8 words) and an "aiIcon" type.\n\nIcon types: "trending", "popular", "time", "location", "preference", "new"\n\n${userContext ? `USER CONTEXT: ${userContext}` : "Anonymous user — focus on popularity and trending."}\nFILTER: "${filter}" — ${filter === "trending" ? "prioritize trending" : filter === "hot" ? "prioritize most reviewed" : filter === "new" ? "prioritize newest" : "personalized mix"}`,
+            content: `You are a restaurant discovery AI for CityBites in Pakistan. Rank and annotate these pre-filtered feed items. Each item needs an "aiReason" (max 8 words) and an "aiIcon" type.\n\nIcon types: "trending", "popular", "time", "location", "preference", "new"\n\n${userContext ? `USER CONTEXT: ${userContext}` : "Anonymous user — focus on popularity and trending."}\nFILTER: "${filter}" — ${filter === "trending" ? "prioritize trending" : filter === "hot" ? "prioritize most reviewed" : filter === "new" ? "prioritize newest" : "personalized mix"}`,
           },
           {
             role: "user",
@@ -165,7 +165,7 @@ serve(async (req) => {
       rating: r.average_rating, reviewCount: r.total_reviews,
       priceRange: r.price_range, neighborhood: r.neighborhood,
       cuisines: r.cuisines, isTrending: (r.tiktok_trend_score || 0) > 70,
-      aiContext: { reason: "Popular in Lahore", icon: "popular" },
+      aiContext: { reason: "Popular pick", icon: "popular" },
     }));
 
     return new Response(JSON.stringify({ items: fallbackItems }), {

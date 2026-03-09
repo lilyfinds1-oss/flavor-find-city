@@ -7,26 +7,26 @@ const corsHeaders = {
 };
 
 const SEARCH_TOPICS = [
-  "best steak restaurants in Lahore",
-  "top biryani places in Lahore",
-  "best BBQ in Lahore",
-  "best pizza in Lahore",
-  "best cafes in Lahore",
-  "best fine dining restaurants in Lahore",
-  "best Chinese food in Lahore",
-  "best dessert places in Lahore",
-  "best burger joints in Lahore",
-  "best breakfast spots in Lahore",
-  "best desi food in Lahore",
-  "best seafood restaurants in Lahore",
-  "best rooftop restaurants in Lahore",
-  "best ice cream in Lahore",
-  "best nihari in Lahore",
-  "best haleem spots in Lahore",
-  "best street food in Lahore",
-  "best family restaurants in Lahore",
-  "best date night restaurants Lahore",
-  "best budget friendly food Lahore",
+  "best steak restaurants in Pakistan",
+  "top biryani places in Pakistan",
+  "best BBQ in Pakistan",
+  "best pizza in Pakistan",
+  "best cafes in Pakistan",
+  "best fine dining restaurants in Pakistan",
+  "best Chinese food in Pakistan",
+  "best dessert places in Pakistan",
+  "best burger joints in Pakistan",
+  "best breakfast spots in Pakistan",
+  "best desi food in Pakistan",
+  "best seafood restaurants in Pakistan",
+  "best rooftop restaurants in Pakistan",
+  "best ice cream in Pakistan",
+  "best nihari in Pakistan",
+  "best haleem spots in Pakistan",
+  "best street food in Pakistan",
+  "best family restaurants in Pakistan",
+  "best date night restaurants Pakistan",
+  "best budget friendly food Pakistan",
 ];
 
 function slugify(text: string): string {
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const restaurantContext = (restaurants || [])
       .map(
         (r: any, i: number) =>
-          `${i + 1}. ${r.name} — ${r.neighborhood || "Lahore"}, Rating: ${r.google_rating || r.average_rating}/5 (${r.google_review_count || 0} reviews), Price: ${r.price_range}, Cuisines: ${(r.cuisines || []).join(", ")}, Signature Dishes: ${(r.signature_dishes || []).join(", ")}, Popular Dishes: ${(r.popular_dishes || []).join(", ")}, Ambience: ${r.ambience || "N/A"}, Tags: ${(r.tags || []).join(", ")}, Halal: ${r.is_halal ? "Yes" : "No"}, Delivery: ${r.has_delivery ? "Yes" : "No"}${r.short_description ? `, About: ${r.short_description}` : r.description ? `, About: ${r.description.slice(0, 150)}` : ""}`
+          `${i + 1}. ${r.name} — ${r.neighborhood || "City"}, Rating: ${r.google_rating || r.average_rating}/5 (${r.google_review_count || 0} reviews), Price: ${r.price_range}, Cuisines: ${(r.cuisines || []).join(", ")}, Signature Dishes: ${(r.signature_dishes || []).join(", ")}, Popular Dishes: ${(r.popular_dishes || []).join(", ")}, Ambience: ${r.ambience || "N/A"}, Tags: ${(r.tags || []).join(", ")}, Halal: ${r.is_halal ? "Yes" : "No"}, Delivery: ${r.has_delivery ? "Yes" : "No"}${r.short_description ? `, About: ${r.short_description}` : r.description ? `, About: ${r.description.slice(0, 150)}` : ""}`
       )
       .join("\n");
 
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a food blogger for CityBites, an AI-powered restaurant discovery platform in Lahore, Pakistan. Write engaging, SEO-optimized blog posts. Your style: Conversational, enthusiastic, helpful. Use Pakistani food terminology naturally. Include practical info (prices, areas, best dishes, ambience).`,
+          content: `You are a food blogger for CityBites, an AI-powered restaurant discovery platform in Pakistan. Write engaging, SEO-optimized blog posts. Your style: Conversational, enthusiastic, helpful. Use Pakistani food terminology naturally. Include practical info (prices, areas, best dishes, ambience).`,
         },
         {
           role: "user",
