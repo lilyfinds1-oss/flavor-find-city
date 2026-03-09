@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Restaurant } from "@/hooks/useRestaurants";
 import { MapPin, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCity } from "@/contexts/CityContext";
 
 interface RestaurantMapProps {
   restaurants: Restaurant[];
@@ -12,8 +13,6 @@ interface RestaurantMapProps {
   selectedRestaurantId?: string;
 }
 
-// Lahore, Pakistan coordinates
-const LAHORE_CENTER: [number, number] = [74.3587, 31.5204];
 const DEFAULT_ZOOM = 12;
 
 export function RestaurantMap({
@@ -27,6 +26,12 @@ export function RestaurantMap({
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { city } = useCity();
+
+  const mapCenter: [number, number] = city
+    ? [Number(city.longitude), Number(city.latitude)]
+    : [74.3587, 31.5204];
+  const mapZoom = city?.default_zoom || DEFAULT_ZOOM;
 
   // Initialize map
   useEffect(() => {
@@ -38,8 +43,8 @@ export function RestaurantMap({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/dark-v11",
-        center: LAHORE_CENTER,
-        zoom: DEFAULT_ZOOM,
+        center: mapCenter,
+        zoom: mapZoom,
         attributionControl: false,
       });
 
