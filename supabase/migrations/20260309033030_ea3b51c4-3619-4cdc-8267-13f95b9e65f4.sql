@@ -1,0 +1,1 @@
+ALTER TABLE public.restaurants ALTER COLUMN city SET DEFAULT 'Lahore';
