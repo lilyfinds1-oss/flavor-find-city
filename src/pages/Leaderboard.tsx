@@ -4,9 +4,11 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
- import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
- import { useLeaderboard, getBadgeFromXP, getAvatarEmoji } from "@/hooks/useLeaderboard";
- import { Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLeaderboard, getBadgeFromXP, getAvatarEmoji } from "@/hooks/useLeaderboard";
+import { Loader2 } from "lucide-react";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Crown className="w-6 h-6 text-amber" />;
