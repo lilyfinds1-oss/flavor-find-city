@@ -331,6 +331,11 @@ export default function RestaurantDetail() {
                 </div>
               )}
 
+              {/* Photo Gallery */}
+              {restaurant.photos && restaurant.photos.length > 0 && (
+                <PhotoGallery photos={restaurant.photos} restaurantName={restaurant.name} />
+              )}
+
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
                 <div className="bg-card rounded-xl p-3 sm:p-4 text-center border border-border">
