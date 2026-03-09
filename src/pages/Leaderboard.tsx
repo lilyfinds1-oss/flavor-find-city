@@ -87,23 +87,23 @@ export default function Leaderboard() {
         {/* Top 3 Podium */}
         <div className="container py-8">
            {topUsers.length >= 3 ? (
-           <div className="flex justify-center items-end gap-4 mb-12">
+           <div className="flex justify-center items-end gap-2 sm:gap-4 mb-12">
             {/* 2nd Place */}
             <div className="text-center">
                {topUsers[1].avatar ? (
-                 <Avatar className="w-20 h-20 mx-auto mb-3 shadow-lg">
+                  <Avatar className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 shadow-lg">
                    <AvatarImage src={topUsers[1].avatar} />
                    <AvatarFallback className="text-4xl">{topUsers[1].avatarEmoji}</AvatarFallback>
                  </Avatar>
                ) : (
-                 <div className="w-20 h-20 rounded-full bg-gradient-to-b from-gray-200 to-gray-400 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg">
+                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-gray-200 to-gray-400 flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-3 shadow-lg">
                    {topUsers[1].avatarEmoji}
                  </div>
                )}
-              <p className="font-display font-semibold">{topUsers[1].name}</p>
-              <p className="text-sm text-muted-foreground">{topUsers[1].xp.toLocaleString()} XP</p>
-              <div className="mt-2 h-24 w-24 bg-gray-300 rounded-t-lg flex items-center justify-center">
-                <span className="font-display text-3xl font-bold text-gray-600">2</span>
+               <p className="font-display font-semibold text-sm sm:text-base truncate max-w-[80px] sm:max-w-none">{topUsers[1].name}</p>
+               <p className="text-xs sm:text-sm text-muted-foreground">{topUsers[1].xp.toLocaleString()} XP</p>
+               <div className="mt-2 h-20 sm:h-24 w-20 sm:w-24 bg-gray-300 rounded-t-lg flex items-center justify-center">
+                 <span className="font-display text-2xl sm:text-3xl font-bold text-gray-600">2</span>
               </div>
             </div>
 
@@ -111,38 +111,38 @@ export default function Leaderboard() {
             <div className="text-center">
               <Crown className="w-8 h-8 text-amber mx-auto mb-2 animate-float" />
                {topUsers[0].avatar ? (
-                 <Avatar className="w-24 h-24 mx-auto mb-3 shadow-xl xp-glow">
+                 <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 shadow-xl xp-glow">
                    <AvatarImage src={topUsers[0].avatar} />
                    <AvatarFallback className="text-5xl bg-gradient-gold">{topUsers[0].avatarEmoji}</AvatarFallback>
                  </Avatar>
                ) : (
-                 <div className="w-24 h-24 rounded-full bg-gradient-gold flex items-center justify-center text-5xl mx-auto mb-3 shadow-xl xp-glow">
+                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-gold flex items-center justify-center text-4xl sm:text-5xl mx-auto mb-3 shadow-xl xp-glow">
                    {topUsers[0].avatarEmoji}
                  </div>
                )}
-              <p className="font-display font-bold text-lg">{topUsers[0].name}</p>
-              <p className="text-amber font-semibold">{topUsers[0].xp.toLocaleString()} XP</p>
-              <div className="mt-2 h-32 w-28 bg-gradient-gold rounded-t-lg flex items-center justify-center">
-                <span className="font-display text-4xl font-bold text-charcoal">1</span>
+               <p className="font-display font-bold text-base sm:text-lg truncate max-w-[90px] sm:max-w-none">{topUsers[0].name}</p>
+               <p className="text-amber font-semibold text-sm sm:text-base">{topUsers[0].xp.toLocaleString()} XP</p>
+               <div className="mt-2 h-28 sm:h-32 w-24 sm:w-28 bg-gradient-gold rounded-t-lg flex items-center justify-center">
+                 <span className="font-display text-3xl sm:text-4xl font-bold text-charcoal">1</span>
               </div>
             </div>
 
             {/* 3rd Place */}
             <div className="text-center">
                {topUsers[2].avatar ? (
-                 <Avatar className="w-20 h-20 mx-auto mb-3 shadow-lg">
+                 <Avatar className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 shadow-lg">
                    <AvatarImage src={topUsers[2].avatar} />
                    <AvatarFallback className="text-4xl">{topUsers[2].avatarEmoji}</AvatarFallback>
                  </Avatar>
                ) : (
-                 <div className="w-20 h-20 rounded-full bg-gradient-to-b from-orange-300 to-orange-500 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg">
+                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-orange-300 to-orange-500 flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-3 shadow-lg">
                    {topUsers[2].avatarEmoji}
                  </div>
                )}
-              <p className="font-display font-semibold">{topUsers[2].name}</p>
-              <p className="text-sm text-muted-foreground">{topUsers[2].xp.toLocaleString()} XP</p>
-              <div className="mt-2 h-20 w-24 bg-orange-400 rounded-t-lg flex items-center justify-center">
-                <span className="font-display text-3xl font-bold text-white">3</span>
+               <p className="font-display font-semibold text-sm sm:text-base truncate max-w-[80px] sm:max-w-none">{topUsers[2].name}</p>
+               <p className="text-xs sm:text-sm text-muted-foreground">{topUsers[2].xp.toLocaleString()} XP</p>
+               <div className="mt-2 h-16 sm:h-20 w-20 sm:w-24 bg-orange-400 rounded-t-lg flex items-center justify-center">
+                 <span className="font-display text-2xl sm:text-3xl font-bold text-white">3</span>
               </div>
             </div>
           </div>
