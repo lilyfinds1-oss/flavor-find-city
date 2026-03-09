@@ -9,6 +9,7 @@ import { useLeaderboard, getBadgeFromXP, getAvatarEmoji } from "@/hooks/useLeade
 import { Loader2 } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCity } from "@/contexts/CityContext";
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Crown className="w-6 h-6 text-amber" />;
@@ -28,11 +29,13 @@ const getBadgeColor = (badge: string) => {
 
 export default function Leaderboard() {
    const { data: users, isLoading } = useLeaderboard(20);
+   const { city } = useCity();
+   const cityName = city?.name || "Pakistan";
  
    if (isLoading) {
      return (
        <div className="min-h-screen flex flex-col bg-background">
-         <SEOHead title="Leaderboard" description="See the top foodies in Lahore ranked by XP. Earn points by reviewing, voting, and sharing." />
+         <SEOHead title="Leaderboard" description={`See the top foodies in ${cityName} ranked by XP. Earn points by reviewing, voting, and sharing.`} />
          <Header />
          <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-12 space-y-4">
            {Array.from({ length: 8 }).map((_, i) => (
@@ -64,7 +67,7 @@ export default function Leaderboard() {
  
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="Leaderboard" description="See the top foodies in Lahore ranked by XP. Earn points by reviewing, voting, and sharing." />
+      <SEOHead title="Leaderboard" description={`See the top foodies in ${cityName} ranked by XP. Earn points by reviewing, voting, and sharing.`} />
       <Header />
       
       <main className="flex-1">

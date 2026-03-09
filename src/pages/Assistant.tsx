@@ -8,6 +8,7 @@ import { useRestaurants } from "@/hooks/useRestaurants";
 import { ChatMessage } from "@/components/assistant/ChatMessage";
 import { cn } from "@/lib/utils";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useCity } from "@/contexts/CityContext";
 
 type Message = {
   id: string;
@@ -22,21 +23,24 @@ type Message = {
   }[];
 };
 
-const quickPrompts = [
+const getQuickPrompts = (cityName: string) => [
   { emoji: "🔥", text: "What's trending right now?" },
   { emoji: "💑", text: "Perfect spot for a date night" },
-  { emoji: "🍛", text: "Best biryani in Lahore" },
+  { emoji: "🍛", text: `Best biryani in ${cityName}` },
   { emoji: "🌙", text: "Open late night" },
   { emoji: "💰", text: "Great food under 1500 PKR" },
   { emoji: "🥗", text: "Healthy options nearby" },
 ];
 
 export default function Assistant() {
+  const { city } = useCity();
+  const cityName = city?.name || "Pakistan";
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       role: "assistant",
-      content: "Hey! 👋 I'm your AI food companion. Tell me what you're in the mood for — cuisine, budget, vibe, anything — and I'll find the perfect spot for you in Lahore.",
+      content: `Hey! 👋 I'm your AI food companion. Tell me what you're in the mood for — cuisine, budget, vibe, anything — and I'll find the perfect spot for you in ${cityName}.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -78,7 +82,8 @@ export default function Assistant() {
       const { data, error } = await supabase.functions.invoke("food-assistant", {
         body: { 
           messages: conversationHistory,
-          restaurants: restaurants?.slice(0, 20)
+          restaurants: restaurants?.slice(0, 20),
+          city: cityName
         },
       });
 
@@ -107,7 +112,7 @@ export default function Assistant() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="AI Food Assistant" description="Ask our AI assistant for personalized restaurant recommendations in Lahore based on your mood, cravings, or occasion." />
+      <SEOHead title="AI Food Assistant" description={`Ask our AI assistant for personalized restaurant recommendations in ${cityName} based on your mood, cravings, or occasion.`} />
       <Header />
       
       <main className="flex-1 flex flex-col">
@@ -166,7 +171,7 @@ export default function Assistant() {
             <div className="px-4 pb-4">
               <p className="text-xs text-muted-foreground mb-3 text-center">Try asking</p>
               <div className="flex flex-wrap justify-center gap-2">
-                {quickPrompts.map((prompt, i) => (
+                {getQuickPrompts(cityName).map((prompt, i) => (
                   <button
                     key={i}
                     onClick={() => handleSend(prompt.text)}

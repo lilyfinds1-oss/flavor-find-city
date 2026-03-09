@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const { data: restaurant, error } = await supabase
       .from("restaurants")
-      .select("id, name, neighborhood, cuisines, price_range, signature_dishes, popular_dishes, tags, ambience, is_halal, has_delivery, has_outdoor_seating, is_family_friendly, average_rating, total_reviews")
+      .select("id, name, city, neighborhood, cuisines, price_range, signature_dishes, popular_dishes, tags, ambience, is_halal, has_delivery, has_outdoor_seating, is_family_friendly, average_rating, total_reviews")
       .eq("id", restaurantId)
       .single();
 
@@ -51,7 +51,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a food writer generating restaurant descriptions for a discovery platform in Lahore, Pakistan. Write engaging, SEO-friendly descriptions. Be specific and evocative.`,
+          content: `You are a food writer generating restaurant descriptions for a discovery platform in ${restaurant.city || "Pakistan"}. Write engaging, SEO-friendly descriptions. Be specific and evocative.`,
         },
         {
           role: "user",
