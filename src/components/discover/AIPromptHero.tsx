@@ -67,7 +67,7 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
   };
 
   return (
-    <section className="relative min-h-[60vh] sm:min-h-[70vh] flex flex-col items-center justify-center px-4 py-12 sm:py-20 overflow-hidden">
+    <section className="relative min-h-[68vh] sm:min-h-[75vh] flex flex-col items-center justify-center px-4 pt-16 pb-12 sm:pt-24 sm:pb-20 overflow-hidden">
       {/* Background ambient effects */}
       <div className="absolute inset-0 bg-gradient-hero" />
       <div className="absolute top-1/4 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse-glow" />
