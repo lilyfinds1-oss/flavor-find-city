@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AIPromptHero } from "@/components/discover/AIPromptHero";
@@ -12,9 +12,29 @@ import { NeighborhoodsSection } from "@/components/home/NeighborhoodsSection";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 import { RestaurantOwnersSection } from "@/components/home/RestaurantOwnersSection";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    // Check if user has completed onboarding
+    supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data && !data.onboarding_completed) {
+          setShowOnboarding(true);
+        }
+      });
+  }, [user]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -28,6 +48,13 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead />
       <Header />
+      {user && showOnboarding && (
+        <OnboardingWizard
+          userId={user.id}
+          open={showOnboarding}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
       <main className="flex-1">
         <AIPromptHero onSearch={handleSearch} />
         <LiveTrendingBar />
