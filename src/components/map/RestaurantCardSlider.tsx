@@ -70,7 +70,7 @@ export function RestaurantCardSlider({
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {restaurant.neighborhood || "Lahore"}
+                    {restaurant.neighborhood || restaurant.city || "Pakistan"}
                   </span>
                   <Button
                     variant="ghost"

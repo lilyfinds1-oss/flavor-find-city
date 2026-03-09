@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, BookOpen, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useCity } from "@/contexts/CityContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
@@ -30,7 +31,9 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading, isAdmin, signOut } = useAuth();
+  const { city, cities, setCity } = useCity();
 
   const getUserInitials = () => {
     if (!user?.email) return "U";
@@ -105,12 +108,32 @@ export function Header() {
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Location */}
-          <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5 text-muted-foreground hover:text-foreground">
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="text-sm">Lahore</span>
-            <ChevronDown className="w-3 h-3 opacity-50" />
-          </Button>
+          {/* City Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="hidden sm:flex gap-1.5 text-muted-foreground hover:text-foreground">
+                <MapPin className="w-3.5 h-3.5" />
+                <span className="text-sm">{city?.name || "Select City"}</span>
+                <ChevronDown className="w-3 h-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {cities.map((c) => (
+                <DropdownMenuItem
+                  key={c.id}
+                  onClick={() => setCity(c)}
+                  className={cn("cursor-pointer", c.slug === city?.slug && "bg-muted font-medium")}
+                >
+                  <MapPin className="w-3.5 h-3.5 mr-2" />
+                  {c.name}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuItem onClick={() => navigate("/select-city")} className="cursor-pointer text-primary">
+                View All Cities
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Auth / User Menu */}
           {loading ? (

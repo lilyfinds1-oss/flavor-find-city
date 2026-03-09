@@ -113,7 +113,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-              AI-powered food discovery. Find your next favorite meal in Lahore.
+              AI-powered food discovery. Find your next favorite meal across Pakistan.
             </p>
             <div className="flex gap-3">
               <a 

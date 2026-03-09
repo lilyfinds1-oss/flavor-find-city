@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCity } from "@/contexts/CityContext";
 
 export interface RecentReview {
   id: string;
@@ -22,30 +23,43 @@ export interface RecentReview {
 }
 
 export function useRecentReviews(limit = 6) {
+  const { city } = useCity();
   return useQuery({
-    queryKey: ["recent-reviews", limit],
+    queryKey: ["recent-reviews", limit, city?.name],
     queryFn: async () => {
-      // Fetch recent approved reviews
+      // Get restaurant IDs for this city
+      let restaurantQuery = supabase
+        .from("restaurants")
+        .select("id")
+        .eq("is_active", true);
+
+      if (city?.name) {
+        restaurantQuery = restaurantQuery.eq("city", city.name);
+      }
+
+      const { data: cityRestaurants } = await restaurantQuery;
+      const cityRestaurantIds = cityRestaurants?.map((r) => r.id) || [];
+
+      if (cityRestaurantIds.length === 0) return [];
+
       const { data: reviews, error } = await supabase
         .from("reviews")
         .select("id, title, content, rating, created_at, restaurant_id, user_id")
         .eq("status", "approved")
+        .in("restaurant_id", cityRestaurantIds)
         .order("created_at", { ascending: false })
         .limit(limit);
 
       if (error) throw error;
 
-      // Get unique restaurant and user IDs
       const restaurantIds = [...new Set(reviews.map((r) => r.restaurant_id))];
       const userIds = [...new Set(reviews.map((r) => r.user_id))];
 
-      // Fetch restaurants
       const { data: restaurants } = await supabase
         .from("restaurants")
         .select("id, name, slug, cover_image, neighborhood")
         .in("id", restaurantIds);
 
-      // Fetch profiles
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, display_name, avatar_url, username")
@@ -64,5 +78,6 @@ export function useRecentReviews(limit = 6) {
         profile: profileMap.get(review.user_id) || null,
       })) as RecentReview[];
     },
+    enabled: !!city,
   });
 }

@@ -10,7 +10,7 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = "CityBites";
-const DEFAULT_DESCRIPTION = "Discover the best restaurants in Lahore with AI-powered recommendations, community reviews, and exclusive deals.";
+const DEFAULT_DESCRIPTION = "Discover the best restaurants in Pakistan with AI-powered recommendations, community reviews, and exclusive deals.";
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=630&fit=crop";
 
 export function SEOHead({
@@ -21,7 +21,7 @@ export function SEOHead({
   type = "website",
   jsonLd,
 }: SEOHeadProps) {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — AI-Powered Food Discovery in Lahore`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — AI-Powered Food Discovery in Pakistan`;
 
   return (
     <Helmet>

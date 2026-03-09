@@ -45,7 +45,7 @@ export function usePushNotifications() {
 
         // Show a test notification
         if (navigator.serviceWorker.controller) {
-          new Notification("CityBites Lahore", {
+          new Notification("CityBites", {
             body: "You'll now get notified about new deals and trending restaurants!",
             icon: "/pwa-192x192.png",
           });

@@ -167,6 +167,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cities: {
+        Row: {
+          created_at: string | null
+          default_zoom: number
+          id: string
+          is_active: boolean
+          latitude: number
+          longitude: number
+          name: string
+          neighborhoods: string[]
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_zoom?: number
+          id?: string
+          is_active?: boolean
+          latitude: number
+          longitude: number
+          name: string
+          neighborhoods?: string[]
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          default_zoom?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number
+          longitude?: number
+          name?: string
+          neighborhoods?: string[]
+          slug?: string
+        }
+        Relationships: []
+      }
       deal_redemptions: {
         Row: {
           deal_id: string

@@ -212,7 +212,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
               <div className="p-4">
                 <p className="text-xs text-muted-foreground mb-3 px-2">Try asking naturally</p>
                 <div className="flex flex-wrap gap-2 px-2">
-                  {["cheap spicy food near DHA", "best biryani in Lahore", "romantic dinner spots", "Halal", "Fine Dining", "late night pizza"].map((tag) => (
+                  {["cheap spicy food near DHA", "best biryani nearby", "romantic dinner spots", "Halal", "Fine Dining", "late night pizza"].map((tag) => (
                     <button
                       key={tag}
                       onClick={() => setQuery(tag)}
