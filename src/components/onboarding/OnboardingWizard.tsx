@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sparkles, ChevronRight, MapPin, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCity } from "@/contexts/CityContext";
 
 const CUISINE_OPTIONS = [
   { value: "desi", label: "🍛 Desi", },
@@ -22,11 +23,7 @@ const CUISINE_OPTIONS = [
   { value: "fine_dining", label: "🥂 Fine Dining" },
 ];
 
-const NEIGHBORHOOD_OPTIONS = [
-  "Gulberg", "DHA", "Johar Town", "Model Town", "Liberty",
-  "Mall Road", "Bahria Town", "MM Alam Road", "Garden Town",
-  "Shadman", "Cantt", "Walled City",
-];
+// Neighborhoods now come from city context
 
 interface OnboardingWizardProps {
   userId: string;
@@ -39,6 +36,8 @@ export function OnboardingWizard({ userId, open, onComplete }: OnboardingWizardP
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const { city } = useCity();
+  const neighborhoodOptions = city?.neighborhoods || [];
 
   const toggleCuisine = (value: string) => {
     setSelectedCuisines((prev) =>
@@ -145,12 +144,12 @@ export function OnboardingWizard({ userId, open, onComplete }: OnboardingWizardP
               </div>
               <DialogTitle className="font-display text-xl">Your favorite areas?</DialogTitle>
               <DialogDescription>
-                Pick up to 3 neighborhoods you frequent in Lahore.
+                Pick up to 3 neighborhoods you frequent in {city?.name || "your city"}.
               </DialogDescription>
             </DialogHeader>
 
             <div className="flex flex-wrap gap-2 mt-4">
-              {NEIGHBORHOOD_OPTIONS.map((n) => (
+              {neighborhoodOptions.map((n) => (
                 <button
                   key={n}
                   onClick={() => toggleNeighborhood(n)}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Sparkles, Mic, ArrowRight, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCity } from "@/contexts/CityContext";
 
 interface AIPromptHeroProps {
   onSearch: (query: string) => void;
@@ -22,6 +23,7 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
   const [currentTime, setCurrentTime] = useState("");
   const [greeting, setGreeting] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { city } = useCity();
 
   useEffect(() => {
     const updateTimeContext = () => {
@@ -75,7 +77,7 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
       <div className="relative z-10 flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm text-muted-foreground animate-fade-in">
         <span className="flex items-center gap-1.5 chip">
           <MapPin className="w-3.5 h-3.5" />
-          Lahore
+          {city?.name || "Pakistan"}
         </span>
         <span className="flex items-center gap-1.5 chip">
           <Clock className="w-3.5 h-3.5" />

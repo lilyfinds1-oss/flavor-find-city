@@ -2,47 +2,23 @@ import { Link } from "react-router-dom";
 import { MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCity } from "@/contexts/CityContext";
 
-const neighborhoods = [
-  {
-    name: "Gulberg",
-    description: "Upscale dining & cafes",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=400&fit=crop",
-    restaurantCount: 45,
-  },
-  {
-    name: "DHA",
-    description: "Modern eateries",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=400&fit=crop",
-    restaurantCount: 62,
-  },
-  {
-    name: "MM Alam Road",
-    description: "Food street vibes",
-    image: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&h=400&fit=crop",
-    restaurantCount: 38,
-  },
-  {
-    name: "Johar Town",
-    description: "Family favorites",
-    image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=400&fit=crop",
-    restaurantCount: 29,
-  },
-  {
-    name: "Model Town",
-    description: "Classic spots",
-    image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&h=400&fit=crop",
-    restaurantCount: 24,
-  },
-  {
-    name: "Liberty",
-    description: "Street food hub",
-    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=400&fit=crop",
-    restaurantCount: 51,
-  },
+const neighborhoodImages = [
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=400&fit=crop",
 ];
 
 export function NeighborhoodsSection() {
+  const { city } = useCity();
+  const neighborhoods = (city?.neighborhoods || []).slice(0, 6);
+
+  if (neighborhoods.length === 0) return null;
+
   return (
     <section className="py-10 sm:py-12 px-4 bg-muted/30">
       <div className="max-w-6xl mx-auto">
@@ -53,7 +29,7 @@ export function NeighborhoodsSection() {
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">Explore by Neighborhood</h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">Discover Lahore's food districts</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">Discover {city?.name}'s food districts</p>
             </div>
           </div>
           <Link to="/map">
@@ -65,10 +41,10 @@ export function NeighborhoodsSection() {
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
-          {neighborhoods.map((neighborhood, index) => (
+          {neighborhoods.map((name, index) => (
             <Link
-              key={neighborhood.name}
-              to={`/explore?neighborhood=${encodeURIComponent(neighborhood.name)}`}
+              key={name}
+              to={`/explore?neighborhood=${encodeURIComponent(name)}`}
               className={cn(
                 "group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden",
                 "bg-card border border-border transition-all duration-300",
@@ -77,8 +53,8 @@ export function NeighborhoodsSection() {
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <img
-                src={neighborhood.image}
-                alt={neighborhood.name}
+                src={neighborhoodImages[index % neighborhoodImages.length]}
+                alt={name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
@@ -87,14 +63,8 @@ export function NeighborhoodsSection() {
               
               <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
                 <h3 className="font-semibold text-white text-[11px] sm:text-sm line-clamp-1">
-                  {neighborhood.name}
+                  {name}
                 </h3>
-                <p className="text-white/70 text-[10px] sm:text-xs line-clamp-1 hidden sm:block">
-                  {neighborhood.description}
-                </p>
-                <p className="text-white/50 text-[10px] sm:text-xs mt-0.5 sm:mt-1">
-                  {neighborhood.restaurantCount} places
-                </p>
               </div>
             </Link>
           ))}
