@@ -245,7 +245,115 @@ function createGeminiProvider(apiKey: string, settings: any): AIProvider {
       if (!response.ok) {
         const errText = await response.text();
         throw new AIError(`Gemini vision error: ${response.status} ${errText}`, response.status);
+}
+
+function createLovableProvider(apiKey: string, settings: any): AIProvider {
+  const LOVABLE_BASE = "https://ai.gateway.lovable.dev/v1";
+
+  return {
+    async chatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResponse> {
+      const model = params.model || settings.default_model || "google/gemini-3-flash-preview";
+      
+      // Convert messages to OpenAI format for Lovable Gateway
+      const messages = params.messages.map(msg => ({
+        role: msg.role === "assistant" ? "assistant" : "user",
+        content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)
+      }));
+
+      const body: any = {
+        model,
+        messages,
+        temperature: params.temperature ?? 0.7,
+      };
+
+      if (params.responseSchema) {
+        body.response_format = {
+          type: "json_object"
+        };
       }
+
+      const response = await fetch(`${LOVABLE_BASE}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        if (response.status === 429) throw new AIError("Rate limited by Lovable AI", 429);
+        if (response.status === 402) throw new AIError("Lovable AI credits exhausted", 402);
+        if (response.status === 403 || response.status === 401) throw new AIError("Lovable AI key invalid", 402);
+        throw new AIError(`Lovable AI error: ${response.status} ${errText}`, response.status);
+      }
+
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content || "";
+
+      let parsed: any = undefined;
+      if (params.responseSchema) {
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (jsonMatch) {
+            try { parsed = JSON.parse(jsonMatch[0]); } catch {}
+          }
+        }
+      }
+
+      return { text, parsed };
+    },
+
+    async generateEmbedding(text: string): Promise<number[]> {
+      // Lovable AI doesn't support embeddings, fall back to a simple hash-based approach
+      // or throw an error suggesting to configure Gemini for embeddings
+      throw new AIError("Embeddings require Gemini API key. Configure in Admin → Settings → Gemini Configuration.", 501);
+    },
+
+    async analyzeImage(params: ImageAnalysisParams): Promise<string> {
+      const model = params.model || settings.vision_model || "google/gemini-2.5-pro";
+
+      const response = await fetch(`${LOVABLE_BASE}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${params.mimeType};base64,${params.imageBase64}`
+                }
+              },
+              {
+                type: "text",
+                text: params.prompt
+              }
+            ]
+          }],
+          temperature: 0.3,
+          response_format: { type: "json_object" }
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new AIError(`Lovable AI vision error: ${response.status} ${errText}`, response.status);
+      }
+
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || "";
+    },
+  };
+}
 
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
