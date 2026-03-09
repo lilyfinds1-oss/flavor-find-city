@@ -1,5 +1,5 @@
-// AI Provider Abstraction Layer — Google Gemini Only
-// Reads GEMINI_API_KEY from app_config table
+// AI Provider Abstraction Layer
+// Priority: Gemini API key (direct) → Lovable AI Gateway (fallback)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -28,7 +28,16 @@ export interface ImageAnalysisParams {
   prompt: string;
 }
 
-// Cache keys and settings
+export class AIError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+    this.name = "AIError";
+  }
+}
+
+// --- Internal state ---
 let cachedGeminiKey: string | null = null;
 let cachedSettings: { default_model: string; vision_model: string; recommendation_model: string } | null = null;
 let keyFetched = false;
@@ -43,7 +52,6 @@ function getSupabaseAdmin() {
 async function getGeminiKey(): Promise<string | null> {
   if (keyFetched) return cachedGeminiKey;
   keyFetched = true;
-
   try {
     const supabase = getSupabaseAdmin();
     const { data } = await supabase
@@ -51,7 +59,6 @@ async function getGeminiKey(): Promise<string | null> {
       .select("value")
       .eq("key", "gemini_api_key")
       .maybeSingle();
-
     cachedGeminiKey = data?.value && data.value.length > 10 ? data.value : null;
   } catch (e) {
     console.error("Failed to fetch Gemini key:", e);
@@ -71,39 +78,74 @@ export async function getAISettings() {
       .maybeSingle();
 
     cachedSettings = data || {
-      default_model: "gemini-1.5-flash",
-      vision_model: "gemini-1.5-pro",
-      recommendation_model: "gemini-1.5-pro",
+      default_model: "google/gemini-3-flash-preview",
+      vision_model: "google/gemini-2.5-pro",
+      recommendation_model: "google/gemini-2.5-pro",
     };
   } catch {
     cachedSettings = {
-      default_model: "gemini-1.5-flash",
-      vision_model: "gemini-1.5-pro",
-      recommendation_model: "gemini-1.5-pro",
+      default_model: "google/gemini-3-flash-preview",
+      vision_model: "google/gemini-2.5-pro",
+      recommendation_model: "google/gemini-2.5-pro",
     };
   }
   return cachedSettings!;
 }
 
+// --- Model name helpers ---
+
+/** Ensure model name is prefixed for Lovable AI Gateway */
+function toLovableModel(model: string): string {
+  if (model.startsWith("google/") || model.startsWith("openai/")) return model;
+  // Map bare Gemini names to gateway-compatible names
+  const map: Record<string, string> = {
+    "gemini-1.5-flash": "google/gemini-2.5-flash",
+    "gemini-2.0-flash": "google/gemini-2.5-flash",
+    "gemini-1.5-pro": "google/gemini-2.5-pro",
+    "gemini-2.0-pro": "google/gemini-2.5-pro",
+    "gemini-2.5-flash": "google/gemini-2.5-flash",
+    "gemini-2.5-pro": "google/gemini-2.5-pro",
+  };
+  return map[model] || "google/gemini-3-flash-preview";
+}
+
+/** Strip google/ prefix for direct Gemini API calls */
+function toGeminiModel(model: string): string {
+  if (model.startsWith("google/")) {
+    const bare = model.replace("google/", "");
+    // Map gateway names back to actual Gemini model names
+    const map: Record<string, string> = {
+      "gemini-3-flash-preview": "gemini-2.0-flash",
+      "gemini-2.5-flash": "gemini-2.0-flash",
+      "gemini-2.5-pro": "gemini-1.5-pro",
+    };
+    return map[bare] || bare;
+  }
+  if (model.startsWith("openai/")) return "gemini-1.5-flash"; // fallback
+  return model;
+}
+
+// --- Provider: createAIProvider ---
+
 export async function createAIProvider(): Promise<AIProvider> {
   const geminiKey = await getGeminiKey();
   const settings = await getAISettings();
-  
+
   if (geminiKey) {
-    // Use direct Gemini API when configured
     return createGeminiProvider(geminiKey, settings);
-  } else {
-    // Fall back to Lovable AI Gateway
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableKey) {
-      throw new Error("No AI provider available. Configure Gemini API key in Admin → Settings or ensure Lovable AI is enabled.");
-    }
-    return createLovableProvider(lovableKey, settings);
   }
+
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!lovableKey) {
+    throw new AIError("No AI provider available. Configure Gemini API key in Admin → Settings or ensure Lovable AI is enabled.", 500);
+  }
+  return createLovableProvider(lovableKey, settings);
 }
 
+// --- Gemini Provider (direct API) ---
+
 function mapRole(role: string): string {
-  if (role === "system") return "user"; // Gemini doesn't have system role, prepend as user
+  if (role === "system") return "user";
   if (role === "assistant") return "model";
   return "user";
 }
@@ -117,58 +159,44 @@ function buildGeminiContents(messages: { role: string; content: string | any[] }
       systemText += (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)) + "\n";
       continue;
     }
-
     const role = mapRole(msg.role);
     const text = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content);
 
-    // If first user message, prepend system context
     if (role === "user" && systemText && contents.length === 0) {
-      contents.push({
-        role: "user",
-        parts: [{ text: `${systemText}\n\n${text}` }],
-      });
+      contents.push({ role: "user", parts: [{ text: `${systemText}\n\n${text}` }] });
       systemText = "";
     } else {
       contents.push({ role, parts: [{ text }] });
     }
   }
 
-  // If only system messages, add as user
   if (systemText && contents.length === 0) {
     contents.push({ role: "user", parts: [{ text: systemText }] });
   }
-
   return contents;
 }
 
 function createGeminiProvider(apiKey: string, settings: any): AIProvider {
-  const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
+  const BASE = "https://generativelanguage.googleapis.com/v1beta";
 
   return {
-    async chatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResponse> {
-      const model = params.model || settings.default_model || "gemini-1.5-flash";
+    async chatCompletion(params) {
+      const model = toGeminiModel(params.model || settings.default_model || "gemini-1.5-flash");
       const contents = buildGeminiContents(params.messages);
-
       const body: any = {
         contents,
-        generationConfig: {
-          temperature: params.temperature ?? 0.7,
-        },
+        generationConfig: { temperature: params.temperature ?? 0.7 },
       };
-
       if (params.responseSchema) {
         body.generationConfig.responseMimeType = "application/json";
         body.generationConfig.responseSchema = params.responseSchema;
       }
 
-      const response = await fetch(
-        `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
+      const response = await fetch(`${BASE}/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
       if (!response.ok) {
         const errText = await response.text();
@@ -179,105 +207,77 @@ function createGeminiProvider(apiKey: string, settings: any): AIProvider {
 
       const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
       let parsed: any = undefined;
       if (params.responseSchema) {
-        try {
-          parsed = JSON.parse(text);
-        } catch {
-          // Try to extract JSON from text
-          const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-          if (jsonMatch) {
-            try { parsed = JSON.parse(jsonMatch[0]); } catch {}
-          }
+        try { parsed = JSON.parse(text); } catch {
+          const m = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (m) try { parsed = JSON.parse(m[0]); } catch {}
         }
       }
-
       return { text, parsed };
     },
 
-    async generateEmbedding(text: string): Promise<number[]> {
-      const response = await fetch(
-        `${GEMINI_BASE}/models/text-embedding-004:embedContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "models/text-embedding-004",
-            content: { parts: [{ text }] },
-          }),
-        }
-      );
-
+    async generateEmbedding(text) {
+      const response = await fetch(`${BASE}/models/text-embedding-004:embedContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "models/text-embedding-004", content: { parts: [{ text }] } }),
+      });
       if (!response.ok) {
         const errText = await response.text();
         throw new AIError(`Gemini embedding error: ${response.status} ${errText}`, response.status);
       }
-
       const data = await response.json();
       return data.embedding?.values || [];
     },
 
-    async analyzeImage(params: ImageAnalysisParams): Promise<string> {
-      const model = params.model || settings.vision_model || "gemini-1.5-pro";
-
-      const response = await fetch(
-        `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{
-              role: "user",
-              parts: [
-                { inlineData: { mimeType: params.mimeType, data: params.imageBase64 } },
-                { text: params.prompt },
-              ],
-            }],
-            generationConfig: {
-              temperature: 0.3,
-              responseMimeType: "application/json",
-            },
-          }),
-        }
-      );
-
+    async analyzeImage(params) {
+      const model = toGeminiModel(params.model || settings.vision_model || "gemini-1.5-pro");
+      const response = await fetch(`${BASE}/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            role: "user",
+            parts: [
+              { inlineData: { mimeType: params.mimeType, data: params.imageBase64 } },
+              { text: params.prompt },
+            ],
+          }],
+          generationConfig: { temperature: 0.3, responseMimeType: "application/json" },
+        }),
+      });
       if (!response.ok) {
         const errText = await response.text();
         throw new AIError(`Gemini vision error: ${response.status} ${errText}`, response.status);
+      }
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    },
+  };
 }
 
+// --- Lovable AI Gateway Provider ---
+
 function createLovableProvider(apiKey: string, settings: any): AIProvider {
-  const LOVABLE_BASE = "https://ai.gateway.lovable.dev/v1";
+  const BASE = "https://ai.gateway.lovable.dev/v1";
 
   return {
-    async chatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResponse> {
-      const model = params.model || settings.default_model || "google/gemini-3-flash-preview";
-      
-      // Convert messages to OpenAI format for Lovable Gateway
+    async chatCompletion(params) {
+      const model = toLovableModel(params.model || settings.default_model || "google/gemini-3-flash-preview");
       const messages = params.messages.map(msg => ({
-        role: msg.role === "assistant" ? "assistant" : "user",
-        content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)
+        role: msg.role === "assistant" ? "assistant" : (msg.role === "system" ? "system" : "user"),
+        content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content),
       }));
 
-      const body: any = {
-        model,
-        messages,
-        temperature: params.temperature ?? 0.7,
-      };
-
+      const body: any = { model, messages, temperature: params.temperature ?? 0.7 };
       if (params.responseSchema) {
-        body.response_format = {
-          type: "json_object"
-        };
+        body.response_format = { type: "json_object" };
       }
 
-      const response = await fetch(`${LOVABLE_BASE}/chat/completions`, {
+      const response = await fetch(`${BASE}/chat/completions`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -291,101 +291,57 @@ function createLovableProvider(apiKey: string, settings: any): AIProvider {
 
       const data = await response.json();
       const text = data.choices?.[0]?.message?.content || "";
-
       let parsed: any = undefined;
       if (params.responseSchema) {
-        try {
-          parsed = JSON.parse(text);
-        } catch {
-          const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-          if (jsonMatch) {
-            try { parsed = JSON.parse(jsonMatch[0]); } catch {}
-          }
+        try { parsed = JSON.parse(text); } catch {
+          const m = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (m) try { parsed = JSON.parse(m[0]); } catch {}
         }
       }
-
       return { text, parsed };
     },
 
-    async generateEmbedding(text: string): Promise<number[]> {
-      // Lovable AI doesn't support embeddings, fall back to a simple hash-based approach
-      // or throw an error suggesting to configure Gemini for embeddings
-      throw new AIError("Embeddings require Gemini API key. Configure in Admin → Settings → Gemini Configuration.", 501);
+    async generateEmbedding(_text) {
+      throw new AIError("Embeddings require Gemini API key. Configure in Admin → Settings.", 501);
     },
 
-    async analyzeImage(params: ImageAnalysisParams): Promise<string> {
-      const model = params.model || settings.vision_model || "google/gemini-2.5-pro";
-
-      const response = await fetch(`${LOVABLE_BASE}/chat/completions`, {
+    async analyzeImage(params) {
+      const model = toLovableModel(params.model || settings.vision_model || "google/gemini-2.5-pro");
+      const response = await fetch(`${BASE}/chat/completions`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model,
           messages: [{
             role: "user",
             content: [
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${params.mimeType};base64,${params.imageBase64}`
-                }
-              },
-              {
-                type: "text",
-                text: params.prompt
-              }
-            ]
+              { type: "image_url", image_url: { url: `data:${params.mimeType};base64,${params.imageBase64}` } },
+              { type: "text", text: params.prompt },
+            ],
           }],
           temperature: 0.3,
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
         }),
       });
-
       if (!response.ok) {
         const errText = await response.text();
         throw new AIError(`Lovable AI vision error: ${response.status} ${errText}`, response.status);
       }
-
       const data = await response.json();
       return data.choices?.[0]?.message?.content || "";
     },
   };
 }
 
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    },
-  };
-}
+// --- Helpers ---
 
-export class AIError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-    this.name = "AIError";
-  }
-}
-
-// Helper: build text for embedding from restaurant data
 export function buildRestaurantEmbeddingText(r: any): string {
-  const parts = [
-    r.name,
-    r.short_description || r.description?.substring(0, 200),
-    r.neighborhood,
-    r.cuisines?.join(", "),
-    r.price_range,
-    r.signature_dishes?.join(", "),
-    r.popular_dishes?.join(", "),
-    r.tags?.join(", "),
-    r.ambience,
-    r.is_halal ? "halal" : "",
-    r.has_delivery ? "delivery available" : "",
-    r.has_outdoor_seating ? "outdoor seating" : "",
-    r.is_family_friendly ? "family friendly" : "",
-  ].filter(Boolean);
-  return parts.join(" | ");
+  return [
+    r.name, r.short_description || r.description?.substring(0, 200),
+    r.neighborhood, r.cuisines?.join(", "), r.price_range,
+    r.signature_dishes?.join(", "), r.popular_dishes?.join(", "),
+    r.tags?.join(", "), r.ambience,
+    r.is_halal ? "halal" : "", r.has_delivery ? "delivery available" : "",
+    r.has_outdoor_seating ? "outdoor seating" : "", r.is_family_friendly ? "family friendly" : "",
+  ].filter(Boolean).join(" | ");
 }

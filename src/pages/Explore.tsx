@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRestaurants, useCategories } from "@/hooks/useRestaurants";
 import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
 import { DishScanner } from "@/components/discover/DishScanner";
+import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 
 const priceRanges = ["$", "$$", "$$$", "$$$$"];
 const sortOptions = [
