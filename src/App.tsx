@@ -25,6 +25,7 @@ import RestaurantBilling from "./pages/RestaurantBilling";
 import AIToolsDashboard from "./pages/AIToolsDashboard";
 import MenuAnalyzer from "./pages/MenuAnalyzer";
 import MarketingAssistant from "./pages/MarketingAssistant";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/top-100" element={<Top100 />} />
         <Route path="/restaurant/:slug" element={<RestaurantDetail />} />

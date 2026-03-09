@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useRestaurants, useCategories } from "@/hooks/useRestaurants";
+import { useRestaurants, useCategories, useNeighborhoods } from "@/hooks/useRestaurants";
 import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
 import { DishScanner } from "@/components/discover/DishScanner";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
@@ -28,6 +28,7 @@ export default function Explore() {
   const search = searchParams.get("q") || "";
   const cuisine = searchParams.get("cuisine") || "";
   const priceRange = searchParams.get("price") || "";
+  const neighborhood = searchParams.get("neighborhood") || "";
   const sortBy = (searchParams.get("sort") as "ranking" | "rating" | "reviews" | "trending") || "ranking";
   const isHalal = searchParams.get("halal") === "true";
 
@@ -36,6 +37,7 @@ export default function Explore() {
   const { data: restaurants, isLoading } = useRestaurants({
     cuisine: cuisine || undefined,
     priceRange: priceRange || undefined,
+    neighborhood: neighborhood || undefined,
     sortBy,
     isHalal: isHalal || undefined,
     search: (!useAI && search) ? search : undefined,
@@ -44,6 +46,7 @@ export default function Explore() {
   const { data: aiResults, isLoading: aiLoading } = useAISearch(search, useAI);
 
   const { data: categories } = useCategories();
+  const { data: neighborhoods } = useNeighborhoods();
 
   const displayRestaurants = useAI && aiResults ? aiResults : restaurants;
   const displayLoading = useAI ? aiLoading : isLoading;
@@ -62,7 +65,7 @@ export default function Explore() {
     setSearchParams({});
   };
 
-  const activeFiltersCount = [cuisine, priceRange, isHalal ? "halal" : ""].filter(Boolean).length;
+  const activeFiltersCount = [cuisine, priceRange, neighborhood, isHalal ? "halal" : ""].filter(Boolean).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -124,6 +127,18 @@ export default function Explore() {
                       <SelectItem key={cat.slug} value={cat.slug}>
                         {cat.icon} {cat.name}
                       </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={neighborhood} onValueChange={(v) => updateFilter("neighborhood", v || null)}>
+                  <SelectTrigger className="w-[140px] sm:w-[180px] text-sm">
+                    <SelectValue placeholder="All Areas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Areas</SelectItem>
+                    {neighborhoods?.map((n) => (
+                      <SelectItem key={n} value={n}>{n}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
