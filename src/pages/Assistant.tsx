@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRestaurants } from "@/hooks/useRestaurants";
 import { ChatMessage } from "@/components/assistant/ChatMessage";
 import { cn } from "@/lib/utils";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 type Message = {
   id: string;
@@ -106,6 +107,7 @@ export default function Assistant() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title="AI Food Assistant" description="Ask our AI assistant for personalized restaurant recommendations in Lahore based on your mood, cravings, or occasion." />
       <Header />
       
       <main className="flex-1 flex flex-col">

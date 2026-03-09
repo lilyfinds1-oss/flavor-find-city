@@ -19,6 +19,7 @@ import { ClaimRestaurant } from "@/components/restaurant/ClaimRestaurant";
 import { formatDistanceToNow } from "date-fns";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { useTrackActivity } from "@/hooks/useUserActivity";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function SaveButton({ restaurantId }: { restaurantId: string }) {
   const { user } = useAuth();
@@ -180,8 +181,24 @@ export default function RestaurantDetail() {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="flex-1">
+          <Skeleton className="h-48 sm:h-64 md:h-96 w-full" />
+          <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-8 w-2/3" />
+              <Skeleton className="h-4 w-1/3" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            </div>
+            <Skeleton className="h-24 w-full" />
+            <div className="grid grid-cols-3 gap-4">
+              <Skeleton className="h-20 rounded-xl" />
+              <Skeleton className="h-20 rounded-xl" />
+              <Skeleton className="h-20 rounded-xl" />
+            </div>
+          </div>
         </div>
       </div>
     );

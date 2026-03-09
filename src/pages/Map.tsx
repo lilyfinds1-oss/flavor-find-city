@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { List, Map as MapIcon, Navigation } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useRestaurants } from "@/hooks/useRestaurants";
 import { useAppConfig } from "@/hooks/useAppConfig";
@@ -69,6 +70,7 @@ export default function MapPage() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
+      <SEOHead title="Restaurant Map" description="Explore restaurants on an interactive map of Lahore. Filter by cuisine, price, and features." />
       <Header />
 
       <main className="flex-1 relative">
