@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRestaurants, useCategories } from "@/hooks/useRestaurants";
 import { useAISearch, isNaturalLanguageQuery } from "@/hooks/useAISearch";
 import { DishScanner } from "@/components/discover/DishScanner";
+import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 
 const priceRanges = ["$", "$$", "$$$", "$$$$"];
 const sortOptions = [
@@ -189,6 +190,9 @@ export default function Explore() {
         <div className="max-w-6xl mx-auto px-4 pt-6">
           <DishScanner />
         </div>
+
+        {/* Recommended For You (logged-in users only) */}
+        <RecommendedForYou />
 
         {/* Results */}
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
