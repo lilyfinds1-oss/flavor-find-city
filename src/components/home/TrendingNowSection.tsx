@@ -3,9 +3,11 @@ import { TrendingUp, ChevronRight, Flame } from "lucide-react";
 import { useTrendingRestaurants } from "@/hooks/useTrendingRestaurants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCity } from "@/contexts/CityContext";
 
 export function TrendingNowSection() {
   const { data: restaurants, isLoading } = useTrendingRestaurants(4);
+  const { city } = useCity();
 
   if (isLoading) {
     return (
@@ -18,7 +20,7 @@ export function TrendingNowSection() {
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground">Trending Now</h2>
-                <p className="text-muted-foreground text-xs sm:text-sm">What's hot in Lahore</p>
+                <p className="text-muted-foreground text-xs sm:text-sm">What's hot in {city?.name || "your city"}</p>
               </div>
             </div>
           </div>
@@ -44,7 +46,7 @@ export function TrendingNowSection() {
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">Trending Now</h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">What's hot in Lahore</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">What's hot in {city?.name || "your city"}</p>
             </div>
           </div>
           <Link to="/explore">

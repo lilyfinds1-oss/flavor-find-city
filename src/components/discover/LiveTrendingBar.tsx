@@ -1,6 +1,7 @@
 import { TrendingUp, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useCity } from "@/contexts/CityContext";
 
 interface TrendingItem {
   id: string;

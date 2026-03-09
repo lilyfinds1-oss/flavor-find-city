@@ -275,7 +275,7 @@ export default function RestaurantDetail() {
             <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4">
               <Badge className="bg-gradient-gold text-charcoal font-bold text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2">
                 <Award className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                #{restaurant.city_rank} in Lahore
+                #{restaurant.city_rank} in {restaurant.city}
               </Badge>
             </div>
           )}

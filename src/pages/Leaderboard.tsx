@@ -79,7 +79,7 @@ export default function Leaderboard() {
               Leaderboard
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              The most active and helpful food reviewers in Lahore. Earn XP to climb the ranks!
+              The most active and helpful food reviewers. Earn XP to climb the ranks!
             </p>
           </div>
         </div>

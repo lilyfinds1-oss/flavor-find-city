@@ -4,9 +4,11 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { useTopRestaurants } from "@/hooks/useRestaurants";
+import { useCity } from "@/contexts/CityContext";
 
 export default function Top100() {
   const { data: restaurants, isLoading } = useTopRestaurants(100);
+  const { city } = useCity();
 
   const getRankStyle = (rank: number) => {
     if (rank === 1) return "bg-gradient-to-r from-amber-400 to-yellow-500 text-charcoal";
@@ -30,7 +32,7 @@ export default function Top100() {
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
               Top 100 Restaurants
-              <span className="block text-primary">in Lahore</span>
+              <span className="block text-primary">in {city?.name || "Pakistan"}</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               The definitive ranking based on Google reviews, user votes, TikTok trends, and verified visits.
