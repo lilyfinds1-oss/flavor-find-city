@@ -33,11 +33,14 @@ const quickPrompts = [
 ];
 
 export default function Assistant() {
+  const { city } = useCity();
+  const cityName = city?.name || "Pakistan";
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       role: "assistant",
-      content: "Hey! 👋 I'm your AI food companion. Tell me what you're in the mood for — cuisine, budget, vibe, anything — and I'll find the perfect spot for you in Lahore.",
+      content: `Hey! 👋 I'm your AI food companion. Tell me what you're in the mood for — cuisine, budget, vibe, anything — and I'll find the perfect spot for you in ${cityName}.`,
     },
   ]);
   const [input, setInput] = useState("");
