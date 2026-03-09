@@ -203,6 +203,188 @@ export type Database = {
         }
         Relationships: []
       }
+      community_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      community_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          parent_id: string | null
+          post_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          parent_id?: string | null
+          post_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          parent_id?: string | null
+          post_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "community_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          ai_moderation_notes: string | null
+          ai_moderation_score: number | null
+          ai_spam_score: number | null
+          ai_toxic_score: number | null
+          category_id: string | null
+          comment_count: number | null
+          content: string
+          created_at: string | null
+          dish_tag: string | null
+          id: string
+          image_url: string | null
+          restaurant_id: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          votes: number | null
+        }
+        Insert: {
+          ai_moderation_notes?: string | null
+          ai_moderation_score?: number | null
+          ai_spam_score?: number | null
+          ai_toxic_score?: number | null
+          category_id?: string | null
+          comment_count?: number | null
+          content: string
+          created_at?: string | null
+          dish_tag?: string | null
+          id?: string
+          image_url?: string | null
+          restaurant_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          votes?: number | null
+        }
+        Update: {
+          ai_moderation_notes?: string | null
+          ai_moderation_score?: number | null
+          ai_spam_score?: number | null
+          ai_toxic_score?: number | null
+          category_id?: string | null
+          comment_count?: number | null
+          content?: string
+          created_at?: string | null
+          dish_tag?: string | null
+          id?: string
+          image_url?: string | null
+          restaurant_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          votes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "community_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_redemptions: {
         Row: {
           deal_id: string
