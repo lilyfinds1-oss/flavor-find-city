@@ -191,6 +191,9 @@ export default function Explore() {
           <DishScanner />
         </div>
 
+        {/* Recommended For You (logged-in users only) */}
+        <RecommendedForYou />
+
         {/* Results */}
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
           {displayLoading ? (
