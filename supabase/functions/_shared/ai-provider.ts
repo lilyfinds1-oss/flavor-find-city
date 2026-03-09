@@ -67,8 +67,27 @@ async function getGeminiKey(): Promise<string | null> {
   return cachedGeminiKey;
 }
 
+/** Ensure model names have proper prefix for gateway compatibility */
+function normalizeModelName(model: string): string {
+  if (model.startsWith("google/") || model.startsWith("openai/")) return model;
+  const map: Record<string, string> = {
+    "gemini-1.5-flash": "google/gemini-2.5-flash",
+    "gemini-2.0-flash": "google/gemini-2.5-flash",
+    "gemini-1.5-pro": "google/gemini-2.5-pro",
+    "gemini-2.0-pro": "google/gemini-2.5-pro",
+    "gemini-2.5-flash": "google/gemini-2.5-flash",
+    "gemini-2.5-pro": "google/gemini-2.5-pro",
+  };
+  return map[model] || `google/${model}`;
+}
+
 export async function getAISettings() {
   if (cachedSettings) return cachedSettings;
+  const defaults = {
+    default_model: "google/gemini-3-flash-preview",
+    vision_model: "google/gemini-2.5-pro",
+    recommendation_model: "google/gemini-2.5-pro",
+  };
   try {
     const supabase = getSupabaseAdmin();
     const { data } = await supabase
@@ -77,11 +96,15 @@ export async function getAISettings() {
       .limit(1)
       .maybeSingle();
 
-    cachedSettings = data || {
-      default_model: "google/gemini-3-flash-preview",
-      vision_model: "google/gemini-2.5-pro",
-      recommendation_model: "google/gemini-2.5-pro",
-    };
+    if (data) {
+      cachedSettings = {
+        default_model: normalizeModelName(data.default_model),
+        vision_model: normalizeModelName(data.vision_model),
+        recommendation_model: normalizeModelName(data.recommendation_model),
+      };
+    } else {
+      cachedSettings = defaults;
+    }
   } catch {
     cachedSettings = {
       default_model: "google/gemini-3-flash-preview",
