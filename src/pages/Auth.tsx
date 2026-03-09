@@ -301,7 +301,7 @@ export default function Auth() {
             Discover. Review. Earn.
           </h2>
           <p className="text-lg text-white/80 leading-relaxed">
-            Join thousands of food lovers exploring the best restaurants in Lahore. AI-powered recommendations tailored just for you.
+            Join thousands of food lovers exploring the best restaurants in your city. AI-powered recommendations tailored just for you.
           </p>
           
           {/* Stats */}

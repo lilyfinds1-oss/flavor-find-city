@@ -89,7 +89,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a semantic search engine for restaurants in Lahore, Pakistan. Given a natural language query and pre-filtered restaurant candidates, rank them by relevance. For each match, provide a short reason (max 10 words). Return at most 10 results as a JSON array.`,
+          content: `You are a semantic search engine for restaurants in Pakistan. Given a natural language query and pre-filtered restaurant candidates, rank them by relevance. For each match, provide a short reason (max 10 words). Return at most 10 results as a JSON array.`,
         },
         {
           role: "user",

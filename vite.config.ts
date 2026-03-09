@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => ({
       manifest: {
         name: "CityBites — AI Food Discovery",
         short_name: "CityBites",
-        description: "Discover the best restaurants in Lahore with AI-powered recommendations",
+        description: "Discover the best restaurants in Pakistan with AI-powered recommendations",
         theme_color: "#f97316",
         background_color: "#0c0a09",
         display: "standalone",

@@ -44,7 +44,7 @@ export function ReferralSection() {
     if (navigator.share) {
       await navigator.share({
         title: "Join CityBites!",
-        text: "Discover the best restaurants in Lahore with AI-powered recommendations!",
+        text: "Discover the best restaurants with AI-powered recommendations!",
         url: referralLink,
       });
     } else {

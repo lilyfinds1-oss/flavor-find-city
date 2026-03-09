@@ -67,7 +67,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a personalized restaurant recommendation engine for Lahore, Pakistan. Analyze the user's history and recommend restaurants they haven't visited yet. Prioritize restaurants matching their taste patterns. Return 5-8 recommendations.`,
+          content: `You are a personalized restaurant recommendation engine for Pakistan. Analyze the user's history and recommend restaurants they haven't visited yet. Prioritize restaurants matching their taste patterns. Return 5-8 recommendations.`,
         },
         {
           role: "user",
