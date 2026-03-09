@@ -19,6 +19,7 @@ import { ClaimRestaurant } from "@/components/restaurant/ClaimRestaurant";
 import { formatDistanceToNow } from "date-fns";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { useTrackActivity } from "@/hooks/useUserActivity";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function SaveButton({ restaurantId }: { restaurantId: string }) {
   const { user } = useAuth();
