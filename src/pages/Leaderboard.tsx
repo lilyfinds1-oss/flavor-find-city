@@ -67,7 +67,7 @@ export default function Leaderboard() {
  
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="Leaderboard" description="See the top foodies in Lahore ranked by XP. Earn points by reviewing, voting, and sharing." />
+      <SEOHead title="Leaderboard" description={`See the top foodies in ${cityName} ranked by XP. Earn points by reviewing, voting, and sharing.`} />
       <Header />
       
       <main className="flex-1">

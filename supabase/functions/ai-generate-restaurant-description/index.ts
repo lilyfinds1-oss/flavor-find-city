@@ -51,7 +51,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a food writer generating restaurant descriptions for a discovery platform in Lahore, Pakistan. Write engaging, SEO-friendly descriptions. Be specific and evocative.`,
+          content: `You are a food writer generating restaurant descriptions for a discovery platform in ${restaurant.city || "Pakistan"}. Write engaging, SEO-friendly descriptions. Be specific and evocative.`,
         },
         {
           role: "user",

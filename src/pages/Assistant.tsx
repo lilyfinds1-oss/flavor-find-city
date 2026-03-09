@@ -23,10 +23,10 @@ type Message = {
   }[];
 };
 
-const quickPrompts = [
+const getQuickPrompts = (cityName: string) => [
   { emoji: "🔥", text: "What's trending right now?" },
   { emoji: "💑", text: "Perfect spot for a date night" },
-  { emoji: "🍛", text: "Best biryani in Lahore" },
+  { emoji: "🍛", text: `Best biryani in ${cityName}` },
   { emoji: "🌙", text: "Open late night" },
   { emoji: "💰", text: "Great food under 1500 PKR" },
   { emoji: "🥗", text: "Healthy options nearby" },
