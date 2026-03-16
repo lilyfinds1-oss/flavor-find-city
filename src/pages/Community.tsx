@@ -6,6 +6,7 @@ import { SEOHead } from "@/components/seo/SEOHead";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { CommunityCategories } from "@/components/community/CommunityCategories";
+import { TrendingTopics } from "@/components/community/TrendingTopics";
 import { CommunityPostCard } from "@/components/community/CommunityPostCard";
 import { useCommunityPosts } from "@/hooks/useCommunity";
 import { useAuth } from "@/hooks/useAuth";
