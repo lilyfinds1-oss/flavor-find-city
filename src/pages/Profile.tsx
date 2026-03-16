@@ -19,6 +19,7 @@ import { UserReviews } from "@/components/profile/UserReviews";
 import { PushNotificationToggle } from "@/components/layout/PushNotificationToggle";
 import { BADGES, BadgeDisplay, getEarnedBadges, getProgress } from "@/components/gamification/BadgeSystem";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { CommunityActivity } from "@/components/profile/CommunityActivity";
 
 interface Profile {
   id: string;
@@ -258,6 +259,9 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Community Activity */}
+          <CommunityActivity />
 
           {/* Saved Restaurants */}
           <SavedRestaurants />
