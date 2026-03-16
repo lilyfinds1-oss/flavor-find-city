@@ -73,7 +73,7 @@ export default function CommunityCreatePost() {
         title: title.trim(),
         content: content.trim(),
         category_id: categoryId,
-        restaurant_id: restaurantId || undefined,
+        restaurant_id: restaurantId && restaurantId !== "none" ? restaurantId : undefined,
         dish_tag: dishTag.trim() || undefined,
         image_url: imageUrl,
         user_id: user.id,

@@ -136,7 +136,7 @@ export default function Explore() {
                   </SelectContent>
                 </Select>
 
-                <Select value={neighborhood} onValueChange={(v) => updateFilter("neighborhood", v || null)}>
+                <Select value={neighborhood || "all"} onValueChange={(v) => updateFilter("neighborhood", v === "all" ? null : v)}>
                   <SelectTrigger className="w-[140px] sm:w-[180px] text-sm">
                     <SelectValue placeholder="All Areas" />
                   </SelectTrigger>
