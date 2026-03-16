@@ -120,7 +120,7 @@ export default function CommunityCreatePost() {
             <Select value={restaurantId} onValueChange={setRestaurantId}>
               <SelectTrigger><SelectValue placeholder="Link a restaurant" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {restaurants?.slice(0, 50).map((r) => (
                   <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                 ))}
