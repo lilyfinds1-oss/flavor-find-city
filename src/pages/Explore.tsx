@@ -122,12 +122,12 @@ export default function Explore() {
           <div className="border-b border-border bg-card animate-slide-in-bottom">
             <div className="max-w-6xl mx-auto px-4 py-4">
               <div className="flex flex-wrap gap-3 sm:gap-4 items-center">
-                <Select value={cuisine} onValueChange={(v) => updateFilter("cuisine", v || null)}>
+                <Select value={cuisine || "all"} onValueChange={(v) => updateFilter("cuisine", v === "all" ? null : v)}>
                   <SelectTrigger className="w-[140px] sm:w-[180px] text-sm">
                     <SelectValue placeholder="All Cuisines" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Cuisines</SelectItem>
+                    <SelectItem value="all">All Cuisines</SelectItem>
                     {categories?.map((cat) => (
                       <SelectItem key={cat.slug} value={cat.slug}>
                         {cat.icon} {cat.name}
@@ -136,12 +136,12 @@ export default function Explore() {
                   </SelectContent>
                 </Select>
 
-                <Select value={neighborhood} onValueChange={(v) => updateFilter("neighborhood", v || null)}>
+                <Select value={neighborhood || "all"} onValueChange={(v) => updateFilter("neighborhood", v === "all" ? null : v)}>
                   <SelectTrigger className="w-[140px] sm:w-[180px] text-sm">
                     <SelectValue placeholder="All Areas" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Areas</SelectItem>
+                    <SelectItem value="all">All Areas</SelectItem>
                     {neighborhoods?.map((n) => (
                       <SelectItem key={n} value={n}>{n}</SelectItem>
                     ))}

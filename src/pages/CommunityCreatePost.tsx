@@ -73,7 +73,7 @@ export default function CommunityCreatePost() {
         title: title.trim(),
         content: content.trim(),
         category_id: categoryId,
-        restaurant_id: restaurantId || undefined,
+        restaurant_id: restaurantId && restaurantId !== "none" ? restaurantId : undefined,
         dish_tag: dishTag.trim() || undefined,
         image_url: imageUrl,
         user_id: user.id,
@@ -120,7 +120,7 @@ export default function CommunityCreatePost() {
             <Select value={restaurantId} onValueChange={setRestaurantId}>
               <SelectTrigger><SelectValue placeholder="Link a restaurant" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {restaurants?.slice(0, 50).map((r) => (
                   <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                 ))}
