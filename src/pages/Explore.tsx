@@ -122,7 +122,7 @@ export default function Explore() {
           <div className="border-b border-border bg-card animate-slide-in-bottom">
             <div className="max-w-6xl mx-auto px-4 py-4">
               <div className="flex flex-wrap gap-3 sm:gap-4 items-center">
-                <Select value={cuisine} onValueChange={(v) => updateFilter("cuisine", v || null)}>
+                <Select value={cuisine || "all"} onValueChange={(v) => updateFilter("cuisine", v === "all" ? null : v)}>
                   <SelectTrigger className="w-[140px] sm:w-[180px] text-sm">
                     <SelectValue placeholder="All Cuisines" />
                   </SelectTrigger>
