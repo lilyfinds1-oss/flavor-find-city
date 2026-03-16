@@ -260,6 +260,9 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
+          {/* Community Activity */}
+          <CommunityActivity />
+
           {/* Saved Restaurants */}
           <SavedRestaurants />
 

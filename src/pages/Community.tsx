@@ -49,6 +49,10 @@ export default function Community() {
 
         <CommunityCategories selected={categorySlug} onSelect={setCategorySlug} />
 
+        <div className="mt-6 mb-4">
+          <TrendingTopics />
+        </div>
+
         <div className="flex items-center gap-2 mt-4 mb-6">
           <Button
             variant={sortBy === "trending" ? "default" : "ghost"}
