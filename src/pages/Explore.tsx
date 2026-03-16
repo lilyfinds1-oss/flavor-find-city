@@ -141,7 +141,7 @@ export default function Explore() {
                     <SelectValue placeholder="All Areas" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Areas</SelectItem>
+                    <SelectItem value="all">All Areas</SelectItem>
                     {neighborhoods?.map((n) => (
                       <SelectItem key={n} value={n}>{n}</SelectItem>
                     ))}
