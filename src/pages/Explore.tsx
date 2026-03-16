@@ -127,7 +127,7 @@ export default function Explore() {
                     <SelectValue placeholder="All Cuisines" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Cuisines</SelectItem>
+                    <SelectItem value="all">All Cuisines</SelectItem>
                     {categories?.map((cat) => (
                       <SelectItem key={cat.slug} value={cat.slug}>
                         {cat.icon} {cat.name}
