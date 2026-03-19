@@ -82,7 +82,7 @@ export function useCommunityComments(postId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("community_comments")
-        .select(`*`)
+        .select(`*, profiles!community_comments_user_id_fkey(display_name, username, avatar_url)`)
         .eq("post_id", postId)
         .order("created_at", { ascending: true });
       if (error) throw error;
