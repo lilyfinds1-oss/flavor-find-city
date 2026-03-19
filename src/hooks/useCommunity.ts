@@ -23,7 +23,7 @@ export function useCommunityPosts(categorySlug?: string) {
     queryFn: async () => {
       let query = supabase
         .from("community_posts")
-        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image), profiles:user_id(display_name, username, avatar_url)`)
+        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image)`)
         .order("created_at", { ascending: false })
         .limit(50);
 

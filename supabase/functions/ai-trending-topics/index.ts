@@ -98,8 +98,9 @@ serve(async (req) => {
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        // Return empty topics gracefully instead of error
+        return new Response(JSON.stringify({ topics: [], aiUnavailable: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       throw new Error(`AI gateway error: ${response.status}`);
