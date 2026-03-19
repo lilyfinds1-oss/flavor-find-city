@@ -122,6 +122,12 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("Recommendations error:", e);
+    // On AI credit exhaustion or other AI errors, return empty results gracefully
+    if (e instanceof AIError && (e.status === 402 || e.status === 429)) {
+      return new Response(JSON.stringify({ recommendations: [], aiUnavailable: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const status = e instanceof AIError ? e.status : 500;
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status, headers: { ...corsHeaders, "Content-Type": "application/json" },
