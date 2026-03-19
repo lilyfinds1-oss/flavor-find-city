@@ -284,6 +284,12 @@ export default function ProfilePage() {
             </Card>
           </div>
 
+          {/* Cuisine Preferences */}
+          <DietaryPreferences />
+
+          {/* Account Settings */}
+          <AccountSettings />
+
           {/* Referral Section */}
           <div className="md:col-span-3">
             <ReferralSection />

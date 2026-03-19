@@ -110,6 +110,7 @@ const App = () => (
         <BrowserRouter>
           <CityProvider>
             <AnimatedRoutes />
+            <PWAInstallPopup />
           </CityProvider>
         </BrowserRouter>
       </TooltipProvider>

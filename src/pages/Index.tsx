@@ -67,6 +67,7 @@ const Index = () => {
         <DealsSection />
         <TrendingDiscussions />
         <RestaurantOwnersSection />
+        <PWASection />
         <NeighborhoodsSection />
         <div id="discovery-feed">
           <DiscoveryFeed searchQuery={searchQuery} />
