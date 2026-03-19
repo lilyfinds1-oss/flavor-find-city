@@ -12,6 +12,7 @@ import { NeighborhoodsSection } from "@/components/home/NeighborhoodsSection";
 import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 import { RestaurantOwnersSection } from "@/components/home/RestaurantOwnersSection";
 import { TrendingDiscussions } from "@/components/community/TrendingDiscussions";
+import { PWASection } from "@/components/home/PWASection";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useAuth } from "@/hooks/useAuth";
