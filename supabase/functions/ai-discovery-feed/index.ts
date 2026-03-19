@@ -97,6 +97,7 @@ serve(async (req) => {
     }));
 
     try {
+      if (!ai) throw new Error("AI provider unavailable");
       const aiData = await ai.chatCompletion({
         messages: [
           {
