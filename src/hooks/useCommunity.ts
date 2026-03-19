@@ -49,7 +49,7 @@ export function useTrendingPosts(limit = 5) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("community_posts")
-        .select(`*, community_categories(*), profiles:user_id(display_name, username, avatar_url)`)
+        .select(`*, community_categories(*)`)
         .eq("status", "approved")
         .order("votes", { ascending: false })
         .order("comment_count", { ascending: false })
