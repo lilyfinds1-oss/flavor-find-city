@@ -33,6 +33,7 @@ import Community from "./pages/Community";
 import CommunityCreatePost from "./pages/CommunityCreatePost";
 import CommunityPostDetail from "./pages/CommunityPostDetail";
 import NotFound from "./pages/NotFound";
+import { PWAInstallPopup } from "@/components/pwa/PWAInstallPopup";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,7 @@ const App = () => (
         <BrowserRouter>
           <CityProvider>
             <AnimatedRoutes />
+            <PWAInstallPopup />
           </CityProvider>
         </BrowserRouter>
       </TooltipProvider>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare, Heart, UtensilsCrossed, Download, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -210,15 +210,28 @@ export function Header() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/community" className="cursor-pointer">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    My Posts
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/ai-tools" className="cursor-pointer">
                     <Sparkles className="w-4 h-4 mr-2 text-primary" />
                     AI Tools
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuItem asChild>
                   <Link to="/billing" className="cursor-pointer">
                     <CreditCard className="w-4 h-4 mr-2" />
                     Billing
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/install" className="cursor-pointer">
+                    <Download className="w-4 h-4 mr-2" />
+                    Install App
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
