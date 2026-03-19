@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare, Heart, UtensilsCrossed, Download, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
