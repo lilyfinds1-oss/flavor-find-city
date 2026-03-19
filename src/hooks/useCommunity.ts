@@ -23,7 +23,7 @@ export function useCommunityPosts(categorySlug?: string) {
     queryFn: async () => {
       let query = supabase
         .from("community_posts")
-        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image), profiles:user_id(display_name, username, avatar_url)`)
+        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image), profiles!community_posts_user_id_fkey(display_name, username, avatar_url)`)
         .order("created_at", { ascending: false })
         .limit(50);
 
@@ -49,7 +49,7 @@ export function useTrendingPosts(limit = 5) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("community_posts")
-        .select(`*, community_categories(*), profiles:user_id(display_name, username, avatar_url)`)
+        .select(`*, community_categories(*), profiles!community_posts_user_id_fkey(display_name, username, avatar_url)`)
         .eq("status", "approved")
         .order("votes", { ascending: false })
         .order("comment_count", { ascending: false })
@@ -66,7 +66,7 @@ export function useCommunityPost(postId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("community_posts")
-        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image, neighborhood, cuisines), profiles:user_id(display_name, username, avatar_url)`)
+        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image, neighborhood, cuisines), profiles!community_posts_user_id_fkey(display_name, username, avatar_url)`)
         .eq("id", postId)
         .single();
       if (error) throw error;
@@ -82,7 +82,7 @@ export function useCommunityComments(postId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("community_comments")
-        .select(`*, profiles:user_id(display_name, username, avatar_url)`)
+        .select(`*, profiles!community_comments_user_id_fkey(display_name, username, avatar_url)`)
         .eq("post_id", postId)
         .order("created_at", { ascending: true });
       if (error) throw error;
