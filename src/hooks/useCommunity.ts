@@ -66,7 +66,7 @@ export function useCommunityPost(postId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("community_posts")
-        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image, neighborhood, cuisines)`)
+        .select(`*, community_categories(*), restaurants(id, name, slug, cover_image, neighborhood, cuisines), profiles!community_posts_user_id_fkey(display_name, username, avatar_url)`)
         .eq("id", postId)
         .single();
       if (error) throw error;
