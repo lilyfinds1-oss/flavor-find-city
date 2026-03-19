@@ -32,7 +32,8 @@ serve(async (req) => {
       cleanExpiredCache(supabase).catch(console.error);
     }
 
-    const ai = await createAIProvider();
+    let ai: any = null;
+    try { ai = await createAIProvider(); } catch (e) { console.error("AI provider init failed, using fallback:", e); }
     const limit = 15;
     const offset = page * limit;
 
