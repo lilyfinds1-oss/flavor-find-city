@@ -20,6 +20,8 @@ import { PushNotificationToggle } from "@/components/layout/PushNotificationTogg
 import { BADGES, BadgeDisplay, getEarnedBadges, getProgress } from "@/components/gamification/BadgeSystem";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { CommunityActivity } from "@/components/profile/CommunityActivity";
+import { AccountSettings } from "@/components/profile/AccountSettings";
+import { DietaryPreferences } from "@/components/profile/DietaryPreferences";
 
 interface Profile {
   id: string;
