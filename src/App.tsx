@@ -32,6 +32,11 @@ import SelectCity from "./pages/SelectCity";
 import Community from "./pages/Community";
 import CommunityCreatePost from "./pages/CommunityCreatePost";
 import CommunityPostDetail from "./pages/CommunityPostDetail";
+import CuratedList from "./pages/CuratedList";
+import About from "./pages/About";
+import ForRestaurants from "./pages/ForRestaurants";
+import Careers from "./pages/Careers";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPopup } from "@/components/pwa/PWAInstallPopup";
 
@@ -94,6 +99,11 @@ function AnimatedRoutes() {
           <Route path="/community" element={<Community />} />
           <Route path="/community/create" element={<CommunityCreatePost />} />
           <Route path="/community/post/:id" element={<CommunityPostDetail />} />
+          <Route path="/lists/:slug" element={<CuratedList />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/for-restaurants" element={<ForRestaurants />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
