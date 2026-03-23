@@ -114,14 +114,15 @@ export default function CuratedList() {
                 {restaurants.map((r, i) => (
                   <RestaurantCard
                     key={r.id}
+                    id={r.id}
                     slug={r.slug}
                     name={r.name}
-                    coverImage={r.cover_image}
+                    coverImage={r.cover_image || ""}
                     cuisines={r.cuisines || []}
-                    averageRating={r.average_rating}
-                    totalReviews={r.total_reviews}
-                    priceRange={r.price_range}
-                    neighborhood={r.neighborhood}
+                    rating={r.average_rating ?? 0}
+                    reviewCount={r.total_reviews ?? 0}
+                    priceRange={r.price_range || "$$"}
+                    neighborhood={r.neighborhood || ""}
                     rank={i + 1}
                   />
                 ))}
