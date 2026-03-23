@@ -99,6 +99,11 @@ function AnimatedRoutes() {
           <Route path="/community" element={<Community />} />
           <Route path="/community/create" element={<CommunityCreatePost />} />
           <Route path="/community/post/:id" element={<CommunityPostDetail />} />
+          <Route path="/lists/:slug" element={<CuratedList />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/for-restaurants" element={<ForRestaurants />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
