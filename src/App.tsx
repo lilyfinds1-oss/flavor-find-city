@@ -37,6 +37,8 @@ import About from "./pages/About";
 import ForRestaurants from "./pages/ForRestaurants";
 import Careers from "./pages/Careers";
 import Contact from "./pages/Contact";
+import Compare from "./pages/Compare";
+import NearMe from "./pages/NearMe";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPopup } from "@/components/pwa/PWAInstallPopup";
 
