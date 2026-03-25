@@ -106,6 +106,8 @@ function AnimatedRoutes() {
           <Route path="/for-restaurants" element={<ForRestaurants />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route path="/near-me" element={<NearMe />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
