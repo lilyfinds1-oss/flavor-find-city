@@ -10,8 +10,10 @@
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
  import { toast } from "sonner";
- import { Plus, Pencil, Trash2, Ticket, Loader2 } from "lucide-react";
- import type { Database } from "@/integrations/supabase/types";
+import { Plus, Pencil, Trash2, Ticket, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DealRedemptionAnalytics from "@/components/admin/DealRedemptionAnalytics";
+import type { Database } from "@/integrations/supabase/types";
  
  type DealType = Database["public"]["Enums"]["deal_type"];
  
