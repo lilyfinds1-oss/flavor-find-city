@@ -39,6 +39,7 @@ import Careers from "./pages/Careers";
 import Contact from "./pages/Contact";
 import Compare from "./pages/Compare";
 import NearMe from "./pages/NearMe";
+import MyDealAnalytics from "./pages/MyDealAnalytics";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPopup } from "@/components/pwa/PWAInstallPopup";
 
@@ -108,6 +109,7 @@ function AnimatedRoutes() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/near-me" element={<NearMe />} />
+          <Route path="/my-deal-analytics" element={<MyDealAnalytics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
