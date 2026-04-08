@@ -109,6 +109,7 @@ function AnimatedRoutes() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/near-me" element={<NearMe />} />
+          <Route path="/my-deal-analytics" element={<MyDealAnalytics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
