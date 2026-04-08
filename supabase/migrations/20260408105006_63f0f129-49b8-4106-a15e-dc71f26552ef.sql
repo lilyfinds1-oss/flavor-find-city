@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can view all redemptions" ON public.deal_redemptions FOR SELECT USING (public.has_role(auth.uid(), 'admin'::app_role));
