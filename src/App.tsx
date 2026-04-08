@@ -39,6 +39,7 @@ import Careers from "./pages/Careers";
 import Contact from "./pages/Contact";
 import Compare from "./pages/Compare";
 import NearMe from "./pages/NearMe";
+import MyDealAnalytics from "./pages/MyDealAnalytics";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPopup } from "@/components/pwa/PWAInstallPopup";
 
