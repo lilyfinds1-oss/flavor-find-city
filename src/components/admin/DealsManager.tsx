@@ -10,8 +10,10 @@
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
  import { toast } from "sonner";
- import { Plus, Pencil, Trash2, Ticket, Loader2 } from "lucide-react";
- import type { Database } from "@/integrations/supabase/types";
+import { Plus, Pencil, Trash2, Ticket, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DealRedemptionAnalytics from "@/components/admin/DealRedemptionAnalytics";
+import type { Database } from "@/integrations/supabase/types";
  
  type DealType = Database["public"]["Enums"]["deal_type"];
  
@@ -147,130 +149,146 @@
      );
    }
  
-   return (
-     <div className="space-y-6">
-       <div className="flex items-center justify-between">
-         <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-           <Ticket className="w-5 h-5" />
-           Deals Management
-         </h2>
-         <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) setEditingDeal(null); }}>
-           <DialogTrigger asChild>
-             <Button>
-               <Plus className="w-4 h-4 mr-2" />
-               New Deal
-             </Button>
-           </DialogTrigger>
-           <DialogContent>
-             <DialogHeader>
-               <DialogTitle>{editingDeal ? "Edit Deal" : "Create New Deal"}</DialogTitle>
-             </DialogHeader>
-             <form onSubmit={handleSubmit} className="space-y-4">
-               <div>
-                 <Label htmlFor="restaurant_id">Restaurant</Label>
-                 <Select name="restaurant_id" defaultValue={editingDeal?.restaurant_id}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Select restaurant" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {restaurants?.map((r) => (
-                       <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div>
-                 <Label htmlFor="title">Title</Label>
-                 <Input id="title" name="title" defaultValue={editingDeal?.title} required />
-               </div>
-               <div>
-                 <Label htmlFor="description">Description</Label>
-                 <Textarea id="description" name="description" defaultValue={editingDeal?.description || ""} />
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <Label htmlFor="deal_type">Type</Label>
-                   <Select name="deal_type" defaultValue={editingDeal?.deal_type || "percentage"}>
-                     <SelectTrigger>
-                       <SelectValue />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="percentage">Percentage Off</SelectItem>
-                       <SelectItem value="fixed">Fixed Amount</SelectItem>
-                       <SelectItem value="bogo">Buy One Get One</SelectItem>
-                       <SelectItem value="free_item">Free Item</SelectItem>
-                     </SelectContent>
-                   </Select>
-                 </div>
-                 <div>
-                   <Label htmlFor="discount_value">Discount Value</Label>
-                   <Input id="discount_value" name="discount_value" type="number" defaultValue={editingDeal?.discount_value || ""} />
-                 </div>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <Label htmlFor="xp_cost">XP Cost</Label>
-                   <Input id="xp_cost" name="xp_cost" type="number" defaultValue={editingDeal?.xp_cost || 0} required />
-                 </div>
-                 <div>
-                   <Label htmlFor="expires_at">Expires At</Label>
-                   <Input id="expires_at" name="expires_at" type="datetime-local" defaultValue={editingDeal?.expires_at?.slice(0, 16) || ""} />
-                 </div>
-               </div>
-               <Button type="submit" className="w-full" disabled={createDeal.isPending || updateDeal.isPending}>
-                 {editingDeal ? "Update Deal" : "Create Deal"}
-               </Button>
-             </form>
-           </DialogContent>
-         </Dialog>
-       </div>
- 
-       <div className="grid gap-4">
-         {deals?.map((deal) => (
-           <Card key={deal.id}>
-             <CardContent className="p-4">
-               <div className="flex items-start justify-between">
-                 <div className="flex-1">
-                   <div className="flex items-center gap-2 mb-2">
-                     <h3 className="font-semibold">{deal.title}</h3>
-                     <Badge className={getDealTypeBadge(deal.deal_type)}>{deal.deal_type}</Badge>
-                     {!deal.is_active && <Badge variant="secondary">Inactive</Badge>}
-                   </div>
-                   <p className="text-sm text-muted-foreground mb-1">{deal.restaurant?.name}</p>
-                   {deal.description && <p className="text-sm">{deal.description}</p>}
-                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                     <span>XP Cost: {deal.xp_cost}</span>
-                     {deal.discount_value && <span>Discount: {deal.discount_value}</span>}
-                     {deal.expires_at && (
-                       <span>Expires: {new Date(deal.expires_at).toLocaleDateString()}</span>
-                     )}
-                   </div>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <Button
-                     variant="outline"
-                     size="icon"
-                     onClick={() => { setEditingDeal(deal); setIsOpen(true); }}
-                   >
-                     <Pencil className="w-4 h-4" />
-                   </Button>
-                   <Button
-                     variant="outline"
-                     size="icon"
-                     onClick={() => deleteDeal.mutate(deal.id)}
-                     disabled={deleteDeal.isPending}
-                   >
-                     <Trash2 className="w-4 h-4" />
-                   </Button>
-                 </div>
-               </div>
-             </CardContent>
-           </Card>
-         ))}
-         {deals?.length === 0 && (
-           <p className="text-center text-muted-foreground py-8">No deals yet. Create your first deal!</p>
-         )}
-       </div>
-     </div>
-   );
- }
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Ticket className="w-5 h-5" />
+          <h2 className="font-display text-xl font-semibold">Deals Management</h2>
+        </div>
+
+        <Tabs defaultValue="manage" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="manage">Manage Deals</TabsTrigger>
+            <TabsTrigger value="analytics">Redemption Analytics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="manage">
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) setEditingDeal(null); }}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Deal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{editingDeal ? "Edit Deal" : "Create New Deal"}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div>
+                        <Label htmlFor="restaurant_id">Restaurant</Label>
+                        <Select name="restaurant_id" defaultValue={editingDeal?.restaurant_id}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select restaurant" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {restaurants?.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" name="title" defaultValue={editingDeal?.title} required />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" defaultValue={editingDeal?.description || ""} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="deal_type">Type</Label>
+                          <Select name="deal_type" defaultValue={editingDeal?.deal_type || "percentage"}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">Percentage Off</SelectItem>
+                              <SelectItem value="fixed">Fixed Amount</SelectItem>
+                              <SelectItem value="bogo">Buy One Get One</SelectItem>
+                              <SelectItem value="free_item">Free Item</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="discount_value">Discount Value</Label>
+                          <Input id="discount_value" name="discount_value" type="number" defaultValue={editingDeal?.discount_value || ""} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="xp_cost">XP Cost</Label>
+                          <Input id="xp_cost" name="xp_cost" type="number" defaultValue={editingDeal?.xp_cost || 0} required />
+                        </div>
+                        <div>
+                          <Label htmlFor="expires_at">Expires At</Label>
+                          <Input id="expires_at" name="expires_at" type="datetime-local" defaultValue={editingDeal?.expires_at?.slice(0, 16) || ""} />
+                        </div>
+                      </div>
+                      <Button type="submit" className="w-full" disabled={createDeal.isPending || updateDeal.isPending}>
+                        {editingDeal ? "Update Deal" : "Create Deal"}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid gap-4">
+                {deals?.map((deal) => (
+                  <Card key={deal.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{deal.title}</h3>
+                            <Badge className={getDealTypeBadge(deal.deal_type)}>{deal.deal_type}</Badge>
+                            {!deal.is_active && <Badge variant="secondary">Inactive</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-1">{deal.restaurant?.name}</p>
+                          {deal.description && <p className="text-sm">{deal.description}</p>}
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <span>XP Cost: {deal.xp_cost}</span>
+                            {deal.discount_value && <span>Discount: {deal.discount_value}</span>}
+                            {deal.expires_at && (
+                              <span>Expires: {new Date(deal.expires_at).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => { setEditingDeal(deal); setIsOpen(true); }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => deleteDeal.mutate(deal.id)}
+                            disabled={deleteDeal.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {deals?.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">No deals yet. Create your first deal!</p>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <DealRedemptionAnalytics />
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
