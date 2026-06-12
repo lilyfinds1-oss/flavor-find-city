@@ -1,9 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, AIError } from "../_shared/ai-provider.ts";
+import { requireCronOrAdmin, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const SEARCH_TOPICS = [
@@ -35,6 +36,13 @@ function slugify(text: string): string {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    await requireCronOrAdmin(req);
+  } catch (e) {
+    return authErrorResponse(e, corsHeaders);
+  }
+
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

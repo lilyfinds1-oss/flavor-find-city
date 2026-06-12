@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, getAISettings, AIError } from "../_shared/ai-provider.ts";
 import { getCached, setCache } from "../_shared/cache.ts";
+import { requireUser, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,17 +12,21 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  let authedUser;
+  try {
+    authedUser = await requireUser(req);
+  } catch (e) {
+    return authErrorResponse(e, corsHeaders);
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { userId } = await req.json();
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "userId required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Always use the authenticated user's id — ignore any client-supplied userId
+    const userId = authedUser.id;
+
 
     // Check cache
     const cacheKey = `recs:${userId}`;

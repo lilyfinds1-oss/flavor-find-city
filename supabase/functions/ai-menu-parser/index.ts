@@ -32,17 +32,33 @@ Deno.serve(async (req) => {
     const { restaurant_id, menu_text, menu_image_base64, menu_image_mime } = await req.json();
     if (!restaurant_id) throw new Error("restaurant_id required");
 
-    // Verify subscription
+    // Verify subscription belongs to the calling user
     const { data: sub } = await supabase
       .from("restaurant_subscriptions")
       .select("plan_name, status")
       .eq("restaurant_id", restaurant_id)
+      .eq("user_id", user.id)
       .eq("status", "active")
       .maybeSingle();
 
     if (!sub || sub.plan_name !== "growth") {
       return new Response(
         JSON.stringify({ error: "Growth plan required for AI Menu Intelligence" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Additionally verify approved ownership claim
+    const { data: claim } = await supabase
+      .from("restaurant_claims")
+      .select("id")
+      .eq("restaurant_id", restaurant_id)
+      .eq("user_id", user.id)
+      .eq("status", "approved")
+      .maybeSingle();
+    if (!claim) {
+      return new Response(
+        JSON.stringify({ error: "You must have an approved claim for this restaurant" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

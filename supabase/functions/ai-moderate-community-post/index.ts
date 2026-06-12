@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireUser, authErrorResponse, AuthError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,13 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  let user;
+  try {
+    user = await requireUser(req);
+  } catch (e) {
+    return authErrorResponse(e, corsHeaders);
+  }
+
   try {
     const { postId, title, content } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -17,6 +25,21 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // If updating an existing post, verify caller owns it OR is moderator/admin
+    if (postId) {
+      const [{ data: post }, { data: roles }] = await Promise.all([
+        supabase.from("community_posts").select("user_id").eq("id", postId).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+      ]);
+      const isPrivileged = (roles || []).some((r: any) => r.role === "admin" || r.role === "moderator");
+      if (!post) {
+        return authErrorResponse(new AuthError("Post not found", 404), corsHeaders);
+      }
+      if (!isPrivileged && post.user_id !== user.id) {
+        return authErrorResponse(new AuthError("Not allowed to moderate this post", 403), corsHeaders);
+      }
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
