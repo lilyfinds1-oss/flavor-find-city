@@ -31,17 +31,33 @@ Deno.serve(async (req) => {
     const { restaurant_id, content_type, special_dish, promotion_type, custom_prompt } = await req.json();
     if (!restaurant_id) throw new Error("restaurant_id required");
 
-    // Verify subscription (both starter and growth have marketing)
+    // Verify subscription belongs to the calling user
     const { data: sub } = await supabase
       .from("restaurant_subscriptions")
       .select("plan_name, status")
       .eq("restaurant_id", restaurant_id)
+      .eq("user_id", user.id)
       .eq("status", "active")
       .maybeSingle();
 
     if (!sub) {
       return new Response(
         JSON.stringify({ error: "Active subscription required for AI Marketing Assistant" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Additionally verify approved ownership claim
+    const { data: claim } = await supabase
+      .from("restaurant_claims")
+      .select("id")
+      .eq("restaurant_id", restaurant_id)
+      .eq("user_id", user.id)
+      .eq("status", "approved")
+      .maybeSingle();
+    if (!claim) {
+      return new Response(
+        JSON.stringify({ error: "You must have an approved claim for this restaurant" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, AIError } from "../_shared/ai-provider.ts";
+import { requireUser, authErrorResponse, AuthError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,13 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  let user;
+  try {
+    user = await requireUser(req);
+  } catch (e) {
+    return authErrorResponse(e, corsHeaders);
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -17,6 +25,19 @@ serve(async (req) => {
 
     const ai = await createAIProvider();
     const { reviewId, title, content, rating, restaurantName } = await req.json();
+
+    // If updating an existing review, verify caller owns it OR is moderator/admin
+    if (reviewId) {
+      const [{ data: review }, { data: roles }] = await Promise.all([
+        supabase.from("reviews").select("user_id").eq("id", reviewId).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+      ]);
+      const isPrivileged = (roles || []).some((r: any) => r.role === "admin" || r.role === "moderator");
+      if (!review) throw new AuthError("Review not found", 404);
+      if (!isPrivileged && review.user_id !== user.id) {
+        throw new AuthError("Not allowed to moderate this review", 403);
+      }
+    }
 
     const aiData = await ai.chatCompletion({
       messages: [
