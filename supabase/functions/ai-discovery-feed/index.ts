@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, AIError } from "../_shared/ai-provider.ts";
 import { getCached, setCache, cleanExpiredCache } from "../_shared/cache.ts";
+import { getOptionalUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +19,12 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { filter = "all", userId, page = 0 } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { filter = "all", page = 0 } = body;
+    // Ignore client-supplied userId — derive from verified token. Anonymous = no personalization.
+    const authedUser = await getOptionalUser(req);
+    const userId = authedUser?.id || null;
+
 
     const cacheKey = `discovery:${filter}:${page}:${userId || "anon"}`;
     const cached = await getCached(supabase, cacheKey);
