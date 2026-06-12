@@ -1,0 +1,1 @@
+CREATE POLICY "Only admins can view subscribers" ON public.newsletter_subscribers FOR SELECT USING (public.has_role(auth.uid(), 'admin'::app_role));
