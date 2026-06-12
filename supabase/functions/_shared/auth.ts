@@ -63,12 +63,17 @@ export async function requireRole(
 
 /**
  * Allows cron/scheduled invocations via a shared CRON_SECRET header,
- * OR an admin user JWT. Throws if neither is present.
+ * a service-role JWT (server-to-server), OR an admin user JWT.
  */
 export async function requireCronOrAdmin(req: Request): Promise<void> {
   const cronSecret = Deno.env.get("CRON_SECRET");
   const provided = req.headers.get("x-cron-secret");
   if (cronSecret && provided && provided === cronSecret) return;
+
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const authHeader = req.headers.get("Authorization");
+  if (serviceKey && authHeader === `Bearer ${serviceKey}`) return;
+
   await requireRole(req, ["admin"]);
 }
 
