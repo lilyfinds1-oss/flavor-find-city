@@ -1,4 +1,4 @@
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Star, Ticket, MessageSquare, Award, Sparkles, Users, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +11,19 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+
+const TYPE_META: Record<string, { icon: LucideIcon; tone: string }> = {
+  xp_earned: { icon: Sparkles, tone: "text-amber-500 bg-amber-500/10" },
+  new_deal: { icon: Ticket, tone: "text-primary bg-primary/10" },
+  review_approved: { icon: Star, tone: "text-emerald-500 bg-emerald-500/10" },
+  new_comment: { icon: MessageSquare, tone: "text-blue-500 bg-blue-500/10" },
+  badge_earned: { icon: Award, tone: "text-fuchsia-500 bg-fuchsia-500/10" },
+  referral: { icon: Users, tone: "text-primary bg-primary/10" },
+};
+
+function iconFor(type: string) {
+  return TYPE_META[type] ?? { icon: Bell, tone: "text-muted-foreground bg-muted" };
+}
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -48,6 +61,8 @@ export function NotificationBell() {
           ) : (
             <div className="divide-y divide-border/20">
               {notifications.map((notif) => {
+                const meta = iconFor(notif.type);
+                const Icon = meta.icon;
                 const content = (
                   <div
                     key={notif.id}
@@ -57,12 +72,14 @@ export function NotificationBell() {
                     )}
                     onClick={() => markAsRead(notif.id)}
                   >
-                    <div className={cn(
-                      "w-2 h-2 rounded-full mt-2 shrink-0",
-                      notif.is_read ? "bg-transparent" : "bg-primary"
-                    )} />
+                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", meta.tone)}>
+                      <Icon className="w-4 h-4" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium leading-tight">{notif.title}</p>
+                      <div className="flex items-start gap-2">
+                        <p className="text-sm font-medium leading-tight flex-1">{notif.title}</p>
+                        {!notif.is_read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}
+                      </div>
                       {notif.message && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notif.message}</p>
                       )}
@@ -84,6 +101,13 @@ export function NotificationBell() {
             </div>
           )}
         </ScrollArea>
+        {notifications.length > 0 && (
+          <div className="p-2 border-t border-border/30">
+            <Link to="/profile" className="block text-center text-xs text-muted-foreground hover:text-foreground py-1.5">
+              View all activity
+            </Link>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
