@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare, Heart, UtensilsCrossed, Download, Settings } from "lucide-react";
+import { Menu, X, Search, MapPin, User, Sparkles, Trophy, ChevronDown, Shield, LogOut, Zap, CreditCard, Users, MoreHorizontal, Map, Tag, Star, BookOpen, MessageSquare, Heart, UtensilsCrossed, Download, Settings, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { useMyClaimedRestaurants } from "@/hooks/useSubscription";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,8 @@ export function Header() {
   const navigate = useNavigate();
   const { user, loading, isAdmin, signOut } = useAuth();
   const { city, cities, setCity } = useCity();
+  const { data: claimedRestaurants } = useMyClaimedRestaurants();
+  const isOwner = (claimedRestaurants?.length || 0) > 0;
 
   const getUserInitials = () => {
     if (!user?.email) return "U";
@@ -228,6 +231,14 @@ export function Header() {
                     Billing
                   </Link>
                 </DropdownMenuItem>
+                {isOwner && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/my-deal-analytics" className="cursor-pointer">
+                      <BarChart3 className="w-4 h-4 mr-2 text-primary" />
+                      Deal Analytics
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to="/install" className="cursor-pointer">
                     <Download className="w-4 h-4 mr-2" />

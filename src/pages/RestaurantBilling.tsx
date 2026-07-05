@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Sparkles, ArrowRight, Calendar } from "lucide-react";
+import { CreditCard, Sparkles, ArrowRight, Calendar, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMySubscriptions } from "@/hooks/useSubscription";
 import { format } from "date-fns";
@@ -85,7 +85,12 @@ export default function RestaurantBilling() {
                       </div>
                       <span>{sub.plan_name === "growth" ? "$39/mo" : "$19/mo"}</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Link to="/my-deal-analytics">
+                        <Button variant="outline" size="sm" className="gap-1.5">
+                          <BarChart3 className="w-3 h-3" /> Analytics
+                        </Button>
+                      </Link>
                       <Link to={`/ai-tools`}>
                         <Button variant="outline" size="sm" className="gap-1.5">
                           AI Tools <ArrowRight className="w-3 h-3" />

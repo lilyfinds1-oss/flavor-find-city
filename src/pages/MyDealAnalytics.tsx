@@ -7,17 +7,19 @@ import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Ticket, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { Loader2, Ticket, Users, TrendingUp, BarChart3, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/seo/SEOHead";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { DATE_RANGE_OPTIONS, buildDailySeries, downloadCSV, withinRange, type DateRange } from "@/lib/analytics-utils";
 
 export default function MyDealAnalytics() {
   const { user } = useAuth();
   const { data: claimedRestaurants, isLoading: claimsLoading } = useMyClaimedRestaurants();
   const [selectedRestaurant, setSelectedRestaurant] = useState<string>("all");
+  const [range, setRange] = useState<DateRange>("30d");
 
   const { data: redemptions, isLoading: redemptionsLoading } = useQuery({
     queryKey: ["owner-deal-redemptions", user?.id],
@@ -85,13 +87,17 @@ export default function MyDealAnalytics() {
     );
   }
 
-  // Filter by selected restaurant
+  // Filter by selected restaurant and date range
   const claimedIds = new Set(claimedRestaurants.map((r: any) => r.id));
-  const filtered = (redemptions || []).filter((r: any) => {
-    if (!r.deal?.restaurant_id || !claimedIds.has(r.deal.restaurant_id)) return false;
-    if (selectedRestaurant !== "all" && r.deal.restaurant_id !== selectedRestaurant) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    return (redemptions || []).filter((r: any) => {
+      if (!r.deal?.restaurant_id || !claimedIds.has(r.deal.restaurant_id)) return false;
+      if (selectedRestaurant !== "all" && r.deal.restaurant_id !== selectedRestaurant) return false;
+      if (!withinRange(r.redeemed_at, range)) return false;
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [redemptions, selectedRestaurant, range]);
 
   const totalRedemptions = filtered.length;
   const totalXPSpent = filtered.reduce((sum: number, r: any) => sum + (r.xp_spent || 0), 0);
@@ -108,24 +114,21 @@ export default function MyDealAnalytics() {
   });
   const topDeals = Object.values(dealCounts).sort((a, b) => b.count - a.count).slice(0, 5);
 
-  // Daily chart (last 30 days)
-  const dailyMap: Record<string, number> = {};
-  const now = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    dailyMap[d.toISOString().slice(0, 10)] = 0;
-  }
-  filtered.forEach((r: any) => {
-    if (r.redeemed_at) {
-      const day = r.redeemed_at.slice(0, 10);
-      if (dailyMap[day] !== undefined) dailyMap[day]++;
-    }
-  });
-  const chartData = Object.entries(dailyMap).map(([date, count]) => ({
-    date: date.slice(5),
-    redemptions: count,
-  }));
+  const chartData = buildDailySeries(filtered, range);
+
+  const handleExport = () => {
+    downloadCSV(
+      `my-redemptions-${range}-${new Date().toISOString().slice(0, 10)}.csv`,
+      filtered.map((r: any) => ({
+        redeemed_at: r.redeemed_at,
+        used_at: r.used_at,
+        deal: r.deal?.title || "",
+        restaurant_id: r.deal?.restaurant_id || "",
+        user_id: r.user_id,
+        xp_spent: r.xp_spent ?? 0,
+      })),
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,19 +145,32 @@ export default function MyDealAnalytics() {
               <p className="text-sm text-muted-foreground">Track how your deals are performing</p>
             </div>
           </div>
-          {claimedRestaurants.length > 1 && (
-            <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="All restaurants" />
-              </SelectTrigger>
+          <div className="flex flex-wrap items-center gap-2">
+            {claimedRestaurants.length > 1 && (
+              <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All restaurants" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Restaurants</SelectItem>
+                  {claimedRestaurants.map((r: any) => (
+                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Select value={range} onValueChange={(v) => setRange(v as DateRange)}>
+              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Restaurants</SelectItem>
-                {claimedRestaurants.map((r: any) => (
-                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                {DATE_RANGE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={filtered.length === 0} className="gap-2">
+              <Download className="w-4 h-4" /> CSV
+            </Button>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -209,7 +225,7 @@ export default function MyDealAnalytics() {
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Redemptions (Last 30 Days)</CardTitle>
+              <CardTitle className="text-base">Redemptions ({DATE_RANGE_OPTIONS.find((o) => o.value === range)?.label})</CardTitle>
             </CardHeader>
             <CardContent>
               {totalRedemptions === 0 ? (
