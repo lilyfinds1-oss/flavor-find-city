@@ -7,17 +7,19 @@ import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Ticket, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { Loader2, Ticket, Users, TrendingUp, BarChart3, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/seo/SEOHead";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { DATE_RANGE_OPTIONS, buildDailySeries, downloadCSV, withinRange, type DateRange } from "@/lib/analytics-utils";
 
 export default function MyDealAnalytics() {
   const { user } = useAuth();
   const { data: claimedRestaurants, isLoading: claimsLoading } = useMyClaimedRestaurants();
   const [selectedRestaurant, setSelectedRestaurant] = useState<string>("all");
+  const [range, setRange] = useState<DateRange>("30d");
 
   const { data: redemptions, isLoading: redemptionsLoading } = useQuery({
     queryKey: ["owner-deal-redemptions", user?.id],
