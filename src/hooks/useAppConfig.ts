@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppConfigKey = "mapbox_public_token" | "openai_api_key" | "gemini_api_key" | "stripe_secret_key" | "stripe_publishable_key";
+// Only non-secret keys are readable/writable from the browser.
+// Stripe secret and Gemini API keys are stored as server-side Edge Function
+// secrets (Deno.env) and MUST NEVER be fetched from the client.
+export type AppConfigKey = "mapbox_public_token" | "stripe_publishable_key";
 
 export function useAppConfig(key: AppConfigKey) {
   return useQuery({
@@ -24,7 +27,6 @@ export function useUpdateAppConfig() {
 
   return useMutation({
     mutationFn: async ({ key, value }: { key: AppConfigKey; value: string }) => {
-      // Upsert: try update, if no rows affected, insert
       const { data: existing } = await supabase
         .from("app_config")
         .select("id")

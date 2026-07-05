@@ -1,16 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, getAISettings, AIError } from "../_shared/ai-provider.ts";
+import { requireUser, authErrorResponse, AuthError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB decoded
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    try {
+      await requireUser(req);
+    } catch (e) {
+      if (e instanceof AuthError) return authErrorResponse(e, corsHeaders);
+      throw e;
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -19,17 +29,29 @@ serve(async (req) => {
     const settings = await getAISettings();
 
     const { imageBase64, mimeType } = await req.json();
-    if (!imageBase64) {
+    if (!imageBase64 || typeof imageBase64 !== "string") {
       return new Response(JSON.stringify({ error: "imageBase64 required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Approximate decoded size: base64 encodes 3 bytes as 4 chars.
+    const approxBytes = Math.floor((imageBase64.length * 3) / 4);
+    if (approxBytes > MAX_IMAGE_BYTES) {
+      return new Response(JSON.stringify({ error: "Image too large (max 5MB)" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const safeMime = typeof mimeType === "string" && /^image\/(jpeg|png|webp|heic|heif)$/i.test(mimeType)
+      ? mimeType
+      : "image/jpeg";
+
     // Step 1: Recognize dish with vision model
     const visionResult = await ai.analyzeImage({
       model: settings.vision_model,
       imageBase64,
-      mimeType: mimeType || "image/jpeg",
+      mimeType: safeMime,
       prompt: `Analyze this food photo and return a JSON object with these fields:
 - dish_name: name of the dish (string)
 - cuisine_type: type of cuisine e.g. Pakistani, Indian, Chinese (string)
@@ -48,12 +70,8 @@ If this is not food, set dish_name to "Not food" and confidence to 0.`,
       dish = jsonMatch ? JSON.parse(jsonMatch[0]) : { dish_name: "Unknown", confidence: 0 };
     }
 
-    // Step 2: Find matching restaurants
     let nearbyRestaurants: any[] = [];
     if (dish.dish_name && dish.dish_name !== "Not food" && dish.confidence > 0.3) {
-      const searchTerms = [dish.dish_name, dish.cuisine_type].filter(Boolean);
-
-      // Search by popular_dishes, signature_dishes, and cuisines
       const { data: restaurants } = await supabase
         .from("restaurants")
         .select("id, name, slug, neighborhood, cuisines, price_range, average_rating, cover_image, signature_dishes, popular_dishes, total_reviews")
@@ -62,7 +80,6 @@ If this is not food, set dish_name to "Not food" and confidence to 0.`,
         .limit(100);
 
       if (restaurants) {
-        // Score restaurants by relevance to dish
         nearbyRestaurants = restaurants
           .map((r: any) => {
             let score = 0;

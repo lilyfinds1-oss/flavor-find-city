@@ -52,18 +52,9 @@ function getSupabaseAdmin() {
 async function getGeminiKey(): Promise<string | null> {
   if (keyFetched) return cachedGeminiKey;
   keyFetched = true;
-  try {
-    const supabase = getSupabaseAdmin();
-    const { data } = await supabase
-      .from("app_config")
-      .select("value")
-      .eq("key", "gemini_api_key")
-      .maybeSingle();
-    cachedGeminiKey = data?.value && data.value.length > 10 ? data.value : null;
-  } catch (e) {
-    console.error("Failed to fetch Gemini key:", e);
-    cachedGeminiKey = null;
-  }
+  // Secrets live ONLY in Deno.env (Supabase Edge Function secrets), never the DB.
+  const envKey = Deno.env.get("GEMINI_API_KEY");
+  cachedGeminiKey = envKey && envKey.length > 10 ? envKey : null;
   return cachedGeminiKey;
 }
 
