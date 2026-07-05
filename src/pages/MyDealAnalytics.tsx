@@ -145,19 +145,32 @@ export default function MyDealAnalytics() {
               <p className="text-sm text-muted-foreground">Track how your deals are performing</p>
             </div>
           </div>
-          {claimedRestaurants.length > 1 && (
-            <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="All restaurants" />
-              </SelectTrigger>
+          <div className="flex flex-wrap items-center gap-2">
+            {claimedRestaurants.length > 1 && (
+              <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All restaurants" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Restaurants</SelectItem>
+                  {claimedRestaurants.map((r: any) => (
+                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Select value={range} onValueChange={(v) => setRange(v as DateRange)}>
+              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Restaurants</SelectItem>
-                {claimedRestaurants.map((r: any) => (
-                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                {DATE_RANGE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={filtered.length === 0} className="gap-2">
+              <Download className="w-4 h-4" /> CSV
+            </Button>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -212,7 +225,7 @@ export default function MyDealAnalytics() {
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Redemptions (Last 30 Days)</CardTitle>
+              <CardTitle className="text-base">Redemptions ({DATE_RANGE_OPTIONS.find((o) => o.value === range)?.label})</CardTitle>
             </CardHeader>
             <CardContent>
               {totalRedemptions === 0 ? (
