@@ -87,13 +87,17 @@ export default function MyDealAnalytics() {
     );
   }
 
-  // Filter by selected restaurant
+  // Filter by selected restaurant and date range
   const claimedIds = new Set(claimedRestaurants.map((r: any) => r.id));
-  const filtered = (redemptions || []).filter((r: any) => {
-    if (!r.deal?.restaurant_id || !claimedIds.has(r.deal.restaurant_id)) return false;
-    if (selectedRestaurant !== "all" && r.deal.restaurant_id !== selectedRestaurant) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    return (redemptions || []).filter((r: any) => {
+      if (!r.deal?.restaurant_id || !claimedIds.has(r.deal.restaurant_id)) return false;
+      if (selectedRestaurant !== "all" && r.deal.restaurant_id !== selectedRestaurant) return false;
+      if (!withinRange(r.redeemed_at, range)) return false;
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [redemptions, selectedRestaurant, range]);
 
   const totalRedemptions = filtered.length;
   const totalXPSpent = filtered.reduce((sum: number, r: any) => sum + (r.xp_spent || 0), 0);
@@ -110,24 +114,21 @@ export default function MyDealAnalytics() {
   });
   const topDeals = Object.values(dealCounts).sort((a, b) => b.count - a.count).slice(0, 5);
 
-  // Daily chart (last 30 days)
-  const dailyMap: Record<string, number> = {};
-  const now = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    dailyMap[d.toISOString().slice(0, 10)] = 0;
-  }
-  filtered.forEach((r: any) => {
-    if (r.redeemed_at) {
-      const day = r.redeemed_at.slice(0, 10);
-      if (dailyMap[day] !== undefined) dailyMap[day]++;
-    }
-  });
-  const chartData = Object.entries(dailyMap).map(([date, count]) => ({
-    date: date.slice(5),
-    redemptions: count,
-  }));
+  const chartData = buildDailySeries(filtered, range);
+
+  const handleExport = () => {
+    downloadCSV(
+      `my-redemptions-${range}-${new Date().toISOString().slice(0, 10)}.csv`,
+      filtered.map((r: any) => ({
+        redeemed_at: r.redeemed_at,
+        used_at: r.used_at,
+        deal: r.deal?.title || "",
+        restaurant_id: r.deal?.restaurant_id || "",
+        user_id: r.user_id,
+        xp_spent: r.xp_spent ?? 0,
+      })),
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
