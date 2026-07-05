@@ -1,9 +1,13 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingUp, Users, Ticket, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, TrendingUp, Users, Ticket, BarChart3, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { DATE_RANGE_OPTIONS, buildDailySeries, downloadCSV, withinRange, type DateRange } from "@/lib/analytics-utils";
 
 interface RedemptionWithDetails {
   id: string;
@@ -17,6 +21,8 @@ interface RedemptionWithDetails {
 }
 
 export default function DealRedemptionAnalytics() {
+  const [range, setRange] = useState<DateRange>("30d");
+
   const { data: redemptions, isLoading } = useQuery({
     queryKey: ["admin-deal-redemptions"],
     queryFn: async () => {
@@ -30,7 +36,6 @@ export default function DealRedemptionAnalytics() {
         .order("redeemed_at", { ascending: false });
 
       if (error) {
-        // Fallback without joins if foreign key names differ
         const { data: fallback, error: fallbackError } = await supabase
           .from("deal_redemptions")
           .select("*")
@@ -42,6 +47,11 @@ export default function DealRedemptionAnalytics() {
     },
   });
 
+  const filtered = useMemo(
+    () => (redemptions || []).filter((r) => withinRange(r.redeemed_at, range)),
+    [redemptions, range],
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -50,14 +60,13 @@ export default function DealRedemptionAnalytics() {
     );
   }
 
-  const totalRedemptions = redemptions?.length || 0;
-  const totalXPSpent = redemptions?.reduce((sum, r) => sum + (r.xp_spent || 0), 0) || 0;
-  const uniqueUsers = new Set(redemptions?.map((r) => r.user_id)).size;
-  const usedCount = redemptions?.filter((r) => r.used_at).length || 0;
+  const totalRedemptions = filtered.length;
+  const totalXPSpent = filtered.reduce((sum, r) => sum + (r.xp_spent || 0), 0);
+  const uniqueUsers = new Set(filtered.map((r) => r.user_id)).size;
+  const usedCount = filtered.filter((r) => r.used_at).length;
 
-  // Top deals by redemption count
   const dealCounts: Record<string, { title: string; count: number; xp: number }> = {};
-  redemptions?.forEach((r) => {
+  filtered.forEach((r) => {
     const key = r.deal_id;
     if (!dealCounts[key]) {
       dealCounts[key] = { title: r.deal?.title || "Unknown Deal", count: 0, xp: 0 };
@@ -65,31 +74,25 @@ export default function DealRedemptionAnalytics() {
     dealCounts[key].count++;
     dealCounts[key].xp += r.xp_spent || 0;
   });
-  const topDeals = Object.values(dealCounts)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+  const topDeals = Object.values(dealCounts).sort((a, b) => b.count - a.count).slice(0, 5);
 
-  // Daily redemptions for chart (last 30 days)
-  const dailyMap: Record<string, number> = {};
-  const now = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    dailyMap[d.toISOString().slice(0, 10)] = 0;
-  }
-  redemptions?.forEach((r) => {
-    if (r.redeemed_at) {
-      const day = r.redeemed_at.slice(0, 10);
-      if (dailyMap[day] !== undefined) dailyMap[day]++;
-    }
-  });
-  const chartData = Object.entries(dailyMap).map(([date, count]) => ({
-    date: date.slice(5), // MM-DD
-    redemptions: count,
-  }));
+  const chartData = buildDailySeries(filtered, range);
+  const recentActivity = filtered.slice(0, 8);
 
-  // Recent activity
-  const recentActivity = (redemptions || []).slice(0, 8);
+  const handleExport = () => {
+    downloadCSV(
+      `redemptions-${range}-${new Date().toISOString().slice(0, 10)}.csv`,
+      filtered.map((r) => ({
+        redeemed_at: r.redeemed_at,
+        used_at: r.used_at,
+        deal: r.deal?.title || "",
+        deal_type: r.deal?.deal_type || "",
+        user: r.profile?.display_name || r.profile?.username || "",
+        user_id: r.user_id,
+        xp_spent: r.xp_spent ?? 0,
+      })),
+    );
+  };
 
   return (
     <div className="space-y-6">
