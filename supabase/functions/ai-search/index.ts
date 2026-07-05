@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createAIProvider, AIError } from "../_shared/ai-provider.ts";
 import { getCached, setCache } from "../_shared/cache.ts";
+import { requireUser, authErrorResponse, AuthError } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,16 +10,25 @@ const corsHeaders = {
 };
 
 const CACHE_TTL_SECONDS = 600;
+const MAX_QUERY_LENGTH = 300;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    try {
+      await requireUser(req);
+    } catch (e) {
+      if (e instanceof AuthError) return authErrorResponse(e, corsHeaders);
+      throw e;
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { query } = await req.json();
+    const { query: rawQuery } = await req.json();
+    const query = typeof rawQuery === "string" ? rawQuery.slice(0, MAX_QUERY_LENGTH) : "";
     if (!query?.trim()) {
       return new Response(JSON.stringify({ results: [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
