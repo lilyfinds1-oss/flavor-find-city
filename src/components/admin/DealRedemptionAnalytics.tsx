@@ -96,6 +96,21 @@ export default function DealRedemptionAnalytics() {
 
   return (
     <div className="space-y-6">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Select value={range} onValueChange={(v) => setRange(v as DateRange)}>
+          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {DATE_RANGE_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={filtered.length === 0} className="gap-2">
+          <Download className="w-4 h-4" /> Export CSV
+        </Button>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
