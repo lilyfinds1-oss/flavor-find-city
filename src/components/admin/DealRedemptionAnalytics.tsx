@@ -163,7 +163,7 @@ export default function DealRedemptionAnalytics() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Redemptions (Last 30 Days)</CardTitle>
+            <CardTitle className="text-base">Redemptions ({DATE_RANGE_OPTIONS.find((o) => o.value === range)?.label})</CardTitle>
           </CardHeader>
           <CardContent>
             {totalRedemptions === 0 ? (
