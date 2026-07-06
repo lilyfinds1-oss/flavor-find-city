@@ -3,6 +3,7 @@ import { Sparkles, Mic, ArrowRight, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCity } from "@/contexts/CityContext";
+import { useScrollReveal, useMagnetic, useParallax } from "@/hooks/useGsapMotion";
 
 interface AIPromptHeroProps {
   onSearch: (query: string) => void;
@@ -24,6 +25,10 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
   const [greeting, setGreeting] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { city } = useCity();
+  const revealRef = useScrollReveal<HTMLDivElement>({ stagger: 0.06, y: 20 });
+  const magneticRef = useMagnetic<HTMLButtonElement>(0.25);
+  const blob1Ref = useParallax<HTMLDivElement>(0.25);
+  const blob2Ref = useParallax<HTMLDivElement>(-0.2);
 
   useEffect(() => {
     const updateTimeContext = () => {
