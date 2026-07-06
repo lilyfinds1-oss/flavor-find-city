@@ -72,14 +72,14 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
   };
 
   return (
-    <section className="relative min-h-[75vh] sm:min-h-[80vh] flex flex-col items-center justify-center px-4 pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
-      {/* Background ambient effects */}
+    <section ref={revealRef} className="relative min-h-[75vh] sm:min-h-[80vh] flex flex-col items-center justify-center px-4 pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
+      {/* Background ambient effects with parallax */}
       <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="absolute top-1/4 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-ai-pulse/5 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
-      
+      <div ref={blob1Ref} className="absolute top-1/4 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse-glow will-change-transform" />
+      <div ref={blob2Ref} className="absolute bottom-1/4 right-1/4 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-ai-pulse/5 rounded-full blur-[100px] animate-pulse-glow will-change-transform" style={{ animationDelay: "1.5s" }} />
+
       {/* Context indicators */}
-      <div className="relative z-10 flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm text-muted-foreground animate-fade-in">
+      <div data-reveal className="relative z-10 flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm text-muted-foreground">
         <span className="flex items-center gap-1.5 chip">
           <MapPin className="w-3.5 h-3.5" />
           {city?.name || "Pakistan"}
@@ -93,26 +93,25 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
       {/* Main prompt area */}
       <div className="relative z-10 w-full max-w-2xl mx-auto text-center">
         {/* Greeting */}
-        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4 animate-fade-in-up">
+        <h1 data-reveal className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4">
           {greeting} <span className="gradient-text-ai">✨</span>
         </h1>
-        
-        <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+
+        <p data-reveal className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
           Tell me what you're in the mood for
         </p>
 
         {/* AI Input */}
-        <form onSubmit={handleSubmit} className="relative animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+        <form data-reveal onSubmit={handleSubmit} className="relative">
           <div
             className={cn(
               "relative flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-2xl transition-all duration-500",
               "bg-card border-2",
-              isFocused 
-                ? "border-primary/50 shadow-lg shadow-primary/10" 
+              isFocused
+                ? "border-primary/50 shadow-lg shadow-primary/10"
                 : "border-border hover:border-muted-foreground/30"
             )}
           >
-            {/* AI indicator */}
             <div className={cn(
               "flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all duration-300 shrink-0",
               isFocused ? "bg-gradient-ai" : "bg-muted"
@@ -134,7 +133,6 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
               className="flex-1 min-w-0 bg-transparent text-base sm:text-lg text-foreground placeholder:text-muted-foreground focus:outline-none py-2 sm:py-3"
             />
 
-            {/* Voice button (UI only) - hidden on small mobile */}
             <Button
               type="button"
               variant="ghost"
@@ -144,8 +142,8 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
               <Mic className="w-5 h-5" />
             </Button>
 
-            {/* Submit button */}
             <Button
+              ref={magneticRef}
               type="submit"
               variant="ai"
               size="lg"
@@ -159,14 +157,13 @@ export function AIPromptHero({ onSearch }: AIPromptHeroProps) {
             </Button>
           </div>
 
-          {/* Glow effect when focused */}
           {isFocused && (
             <div className="absolute -inset-1 bg-gradient-ai rounded-3xl opacity-20 blur-xl -z-10 animate-pulse-glow" />
           )}
         </form>
 
         {/* Quick chips */}
-        <div className="flex flex-wrap justify-center gap-2 mt-6 sm:mt-8 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+        <div data-reveal className="flex flex-wrap justify-center gap-2 mt-6 sm:mt-8">
           {quickChips.map((chip, index) => (
             <button
               key={index}
