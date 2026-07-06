@@ -42,6 +42,7 @@ import NearMe from "./pages/NearMe";
 import MyDealAnalytics from "./pages/MyDealAnalytics";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPopup } from "@/components/pwa/PWAInstallPopup";
+import { ScrollProgress } from "@/components/layout/ScrollProgress";
 
 const queryClient = new QueryClient();
 
@@ -125,6 +126,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <CityProvider>
+            <ScrollProgress />
             <AnimatedRoutes />
             <PWAInstallPopup />
           </CityProvider>
