@@ -2,31 +2,25 @@ import { TrendingUp, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useCity } from "@/contexts/CityContext";
+import { useCityStats } from "@/hooks/useCityStats";
 
 interface TrendingItem {
   id: string;
   title: string;
-  count: number;
   change: "up" | "down" | "new";
-  category?: string;
 }
 
 const trendingItems: TrendingItem[] = [
-  { id: "1", title: "Late night biryani spots", count: 2340, change: "up" },
-  { id: "2", title: "Rooftop restaurants", count: 1890, change: "new" },
-  { id: "3", title: "Best paratha nearby", count: 1567, change: "up" },
-  { id: "4", title: "Hidden gems DHA", count: 1234, change: "up" },
-  { id: "5", title: "Authentic Chinese", count: 987, change: "new" },
-];
-
-const nearbyHighlights = [
-  { name: "Food Street", count: 45, active: true },
-  { name: "MM Alam Road", count: 32, active: false },
-  { name: "Gulberg", count: 28, active: false },
+  { id: "1", title: "Late night biryani spots", change: "up" },
+  { id: "2", title: "Rooftop restaurants", change: "new" },
+  { id: "3", title: "Best paratha nearby", change: "up" },
+  { id: "4", title: "Hidden gems", change: "up" },
 ];
 
 export function LiveTrendingBar() {
   const { city } = useCity();
+  const { data: stats, isLoading } = useCityStats();
+  const nearbyHighlights = stats?.neighborhoods ?? [];
   return (
     <section className="py-6 border-y border-border/50 bg-muted/30">
       <div className="max-w-6xl mx-auto px-4">
@@ -80,25 +74,33 @@ export function LiveTrendingBar() {
             <div className="flex items-center gap-2 mb-4">
               <MapPin className="w-4 h-4 text-primary" />
               <span className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Nearby
+                Top neighborhoods
               </span>
             </div>
             <div className="flex lg:flex-col gap-2">
-              {nearbyHighlights.map((area) => (
-                <Link
-                  key={area.name}
-                  to={`/explore?area=${encodeURIComponent(area.name)}`}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-lg transition-all",
-                    area.active
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <span className="text-xs sm:text-sm font-medium">{area.name}</span>
-                  <span className="text-xs text-muted-foreground">{area.count} open</span>
-                </Link>
-              ))}
+              {isLoading ? (
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="h-9 rounded-lg shimmer flex-1 lg:flex-none" />
+                ))
+              ) : nearbyHighlights.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No neighborhoods yet.</p>
+              ) : (
+                nearbyHighlights.map((area, idx) => (
+                  <Link
+                    key={area.name}
+                    to={`/explore?area=${encodeURIComponent(area.name)}`}
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2 rounded-lg transition-all",
+                      idx === 0
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span className="text-xs sm:text-sm font-medium">{area.name}</span>
+                    <span className="text-xs text-muted-foreground">{area.count} spots</span>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
 
@@ -107,12 +109,14 @@ export function LiveTrendingBar() {
             <div className="flex items-center gap-2 mb-4">
               <Clock className="w-4 h-4 text-accent" />
               <span className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Right now
+                In {city?.name || "your city"}
               </span>
             </div>
             <div className="glass rounded-xl p-3">
-              <p className="text-2xl font-display font-bold text-foreground">127</p>
-              <p className="text-xs text-muted-foreground">restaurants open near you</p>
+              <p className="text-2xl font-display font-bold text-foreground">
+                {isLoading ? "—" : stats?.total ?? 0}
+              </p>
+              <p className="text-xs text-muted-foreground">restaurants listed</p>
             </div>
           </div>
         </div>

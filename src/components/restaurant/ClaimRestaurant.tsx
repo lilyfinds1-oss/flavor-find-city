@@ -1,20 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Building2, Loader2, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Building2, Loader2, CheckCircle, Clock, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ClaimRestaurantProps {
   restaurantId: string;
   restaurantName: string;
 }
+
+type ClaimStatus = "pending" | "approved" | "rejected";
 
 export function ClaimRestaurant({ restaurantId, restaurantName }: ClaimRestaurantProps) {
   const { user } = useAuth();
@@ -23,6 +24,31 @@ export function ClaimRestaurant({ restaurantId, restaurantName }: ClaimRestauran
   const [proof, setProof] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [existing, setExisting] = useState<{ status: ClaimStatus; created_at: string } | null>(null);
+  const [loadingExisting, setLoadingExisting] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setLoadingExisting(false);
+      return;
+    }
+    let active = true;
+    supabase
+      .from("restaurant_claims")
+      .select("status, created_at")
+      .eq("restaurant_id", restaurantId)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!active) return;
+        if (data) setExisting({ status: data.status as ClaimStatus, created_at: data.created_at });
+        setLoadingExisting(false);
+      });
+    return () => { active = false; };
+  }, [user, restaurantId]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,12 +83,38 @@ export function ClaimRestaurant({ restaurantId, restaurantName }: ClaimRestauran
 
   if (!user) return null;
 
+  const statusMeta: Record<ClaimStatus, { icon: typeof Clock; label: string; className: string }> = {
+    pending: { icon: Clock, label: "Claim pending review", className: "text-amber border-amber/40 bg-amber/5" },
+    approved: { icon: CheckCircle, label: "You own this listing", className: "text-success border-success/40 bg-success/5" },
+    rejected: { icon: XCircle, label: "Previous claim rejected — resubmit", className: "text-destructive border-destructive/40 bg-destructive/5" },
+  };
+
+  if (loadingExisting) {
+    return (
+      <Button variant="outline" size="sm" className="gap-2 w-full" disabled>
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Checking…
+      </Button>
+    );
+  }
+
+  if (existing && existing.status !== "rejected") {
+    const meta = statusMeta[existing.status];
+    const Icon = meta.icon;
+    return (
+      <div className={cn("flex items-center gap-2 w-full px-3 py-2 rounded-md border text-xs sm:text-sm", meta.className)}>
+        <Icon className="w-4 h-4 shrink-0" />
+        <span className="font-medium">{meta.label}</span>
+      </div>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 w-full">
           <Building2 className="w-4 h-4" />
-          Own this restaurant?
+          {existing?.status === "rejected" ? "Resubmit claim" : "Own this restaurant?"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
