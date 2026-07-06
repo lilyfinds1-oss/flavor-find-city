@@ -83,12 +83,38 @@ export function ClaimRestaurant({ restaurantId, restaurantName }: ClaimRestauran
 
   if (!user) return null;
 
+  const statusMeta: Record<ClaimStatus, { icon: typeof Clock; label: string; className: string }> = {
+    pending: { icon: Clock, label: "Claim pending review", className: "text-amber border-amber/40 bg-amber/5" },
+    approved: { icon: CheckCircle, label: "You own this listing", className: "text-success border-success/40 bg-success/5" },
+    rejected: { icon: XCircle, label: "Previous claim rejected — resubmit", className: "text-destructive border-destructive/40 bg-destructive/5" },
+  };
+
+  if (loadingExisting) {
+    return (
+      <Button variant="outline" size="sm" className="gap-2 w-full" disabled>
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Checking…
+      </Button>
+    );
+  }
+
+  if (existing && existing.status !== "rejected") {
+    const meta = statusMeta[existing.status];
+    const Icon = meta.icon;
+    return (
+      <div className={cn("flex items-center gap-2 w-full px-3 py-2 rounded-md border text-xs sm:text-sm", meta.className)}>
+        <Icon className="w-4 h-4 shrink-0" />
+        <span className="font-medium">{meta.label}</span>
+      </div>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 w-full">
           <Building2 className="w-4 h-4" />
-          Own this restaurant?
+          {existing?.status === "rejected" ? "Resubmit claim" : "Own this restaurant?"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
