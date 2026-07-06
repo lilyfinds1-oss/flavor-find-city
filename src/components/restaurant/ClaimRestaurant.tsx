@@ -1,20 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Building2, Loader2, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Building2, Loader2, CheckCircle, Clock, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ClaimRestaurantProps {
   restaurantId: string;
   restaurantName: string;
 }
+
+type ClaimStatus = "pending" | "approved" | "rejected";
 
 export function ClaimRestaurant({ restaurantId, restaurantName }: ClaimRestaurantProps) {
   const { user } = useAuth();
@@ -23,6 +24,31 @@ export function ClaimRestaurant({ restaurantId, restaurantName }: ClaimRestauran
   const [proof, setProof] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [existing, setExisting] = useState<{ status: ClaimStatus; created_at: string } | null>(null);
+  const [loadingExisting, setLoadingExisting] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setLoadingExisting(false);
+      return;
+    }
+    let active = true;
+    supabase
+      .from("restaurant_claims")
+      .select("status, created_at")
+      .eq("restaurant_id", restaurantId)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!active) return;
+        if (data) setExisting({ status: data.status as ClaimStatus, created_at: data.created_at });
+        setLoadingExisting(false);
+      });
+    return () => { active = false; };
+  }, [user, restaurantId]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
