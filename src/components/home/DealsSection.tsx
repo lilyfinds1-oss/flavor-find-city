@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ChevronRight, Gift, Clock, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useScrollReveal } from "@/hooks/useGsapMotion";
 
 const deals = [
   {
@@ -40,9 +41,10 @@ const deals = [
 ];
 
 export function DealsSection() {
+  const containerRef = useScrollReveal<HTMLDivElement>({ y: 28, stagger: 0.08 });
   return (
     <section className="py-10 sm:py-16 bg-background">
-      <div className="max-w-6xl mx-auto px-4">
+      <div ref={containerRef} className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center gap-3">
@@ -68,11 +70,12 @@ export function DealsSection() {
         </div>
 
         {/* Deals Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 stagger-children">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {deals.map((deal) => (
             <div
               key={deal.id}
-              className="group bg-card rounded-2xl border border-border/50 overflow-hidden card-hover"
+              data-reveal
+              className="group bg-card rounded-2xl border border-border/50 overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
             >
               {/* Image */}
               <div className="relative h-32 sm:h-40 overflow-hidden">
