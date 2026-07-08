@@ -13,6 +13,7 @@ import { RecommendedForYou } from "@/components/discover/RecommendedForYou";
 import { RestaurantOwnersSection } from "@/components/home/RestaurantOwnersSection";
 import { TrendingDiscussions } from "@/components/community/TrendingDiscussions";
 import { PWASection } from "@/components/home/PWASection";
+import { BentoHighlights } from "@/components/home/BentoHighlights";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,6 +61,7 @@ const Index = () => {
       <main className="flex-1">
         <AIPromptHero onSearch={handleSearch} />
         <LiveTrendingBar />
+        <BentoHighlights />
         <RecommendedForYou />
         <TopRatedSection />
         <TrendingNowSection />

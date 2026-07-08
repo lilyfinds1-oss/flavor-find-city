@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Star, MapPin, TrendingUp, Flame, Clock, Users, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTilt } from "@/hooks/useTilt";
 
 export type TileType = "restaurant" | "editorial" | "trending" | "deal" | "collection";
 
@@ -62,17 +63,19 @@ export function IntelligentTile({
   className,
 }: IntelligentTileProps) {
   const ContextIcon = aiContext?.icon ? contextIcons[aiContext.icon] : Sparkles;
+  const tiltRef = useTilt<HTMLAnchorElement>(4);
 
   const linkPath = type === "restaurant" ? `/restaurant/${slug}` : `/${type}/${slug}`;
 
   return (
     <Link
       to={linkPath}
+      ref={tiltRef}
       className={cn(
         "group relative flex flex-col rounded-2xl overflow-hidden transition-all duration-500",
         "bg-card border border-border/50",
         "hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5",
-        "hover:-translate-y-1",
+        "hover:-translate-y-1 [transform-style:preserve-3d]",
         className
       )}
     >

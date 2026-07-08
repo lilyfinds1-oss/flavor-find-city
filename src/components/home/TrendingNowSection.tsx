@@ -4,10 +4,12 @@ import { useTrendingRestaurants } from "@/hooks/useTrendingRestaurants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCity } from "@/contexts/CityContext";
+import { useScrollReveal } from "@/hooks/useGsapMotion";
 
 export function TrendingNowSection() {
   const { data: restaurants, isLoading } = useTrendingRestaurants(4);
   const { city } = useCity();
+  const containerRef = useScrollReveal<HTMLDivElement>({ y: 28, stagger: 0.07 });
 
   if (isLoading) {
     return (
@@ -38,7 +40,7 @@ export function TrendingNowSection() {
 
   return (
     <section className="py-10 sm:py-12 px-4 bg-muted/30">
-      <div className="max-w-6xl mx-auto">
+      <div ref={containerRef} className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
@@ -58,16 +60,16 @@ export function TrendingNowSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {restaurants.map((restaurant, index) => (
+          {restaurants.map((restaurant) => (
             <Link
               key={restaurant.id}
               to={`/restaurant/${restaurant.slug}`}
+              data-reveal
               className={cn(
                 "group relative h-44 sm:h-48 rounded-2xl overflow-hidden",
                 "bg-card border border-border transition-all duration-300",
                 "hover:shadow-lg hover:border-primary/20"
               )}
-              style={{ animationDelay: `${index * 80}ms` }}
             >
               {restaurant.cover_image ? (
                 <img
