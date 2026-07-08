@@ -4,10 +4,12 @@ import { useTopRatedRestaurants } from "@/hooks/useTopRatedRestaurants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCity } from "@/contexts/CityContext";
+import { useScrollReveal } from "@/hooks/useGsapMotion";
 
 export function TopRatedSection() {
   const { city } = useCity();
   const { data: restaurants, isLoading } = useTopRatedRestaurants(6);
+  const containerRef = useScrollReveal<HTMLDivElement>({ y: 28, stagger: 0.05 });
 
   if (isLoading) {
     return (
@@ -38,7 +40,7 @@ export function TopRatedSection() {
 
   return (
     <section className="py-10 sm:py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+      <div ref={containerRef} className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -62,12 +64,12 @@ export function TopRatedSection() {
             <Link
               key={restaurant.id}
               to={`/restaurant/${restaurant.slug}`}
+              data-reveal
               className={cn(
                 "group relative aspect-[3/4] rounded-2xl overflow-hidden",
                 "bg-card border border-border transition-all duration-300",
                 "hover:shadow-lg hover:border-primary/20 hover:-translate-y-1"
               )}
-              style={{ animationDelay: `${index * 50}ms` }}
             >
               {restaurant.cover_image ? (
                 <img
