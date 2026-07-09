@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ThumbsUp, ThumbsDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sparkleAt, pulseGlow } from "@/lib/celebrate";
 
 interface ReviewVoteButtonProps {
   reviewId: string;
@@ -16,6 +17,8 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
   const [helpfulVotes, setHelpfulVotes] = useState(initialHelpfulVotes);
   const [userVote, setUserVote] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bubble, setBubble] = useState<number | null>(null);
+  const upRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -86,7 +89,14 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
         setUserVote(isHelpful);
         setHelpfulVotes((prev) => prev + (isHelpful ? 1 : -1));
       }
-    } catch (error) {
+
+      // Celebrate helpful up-votes with a little glow + sparkle bubble
+      if (isHelpful && userVote !== true) {
+        pulseGlow(upRef.current, 900);
+        sparkleAt(upRef.current);
+        setBubble(2);
+        window.setTimeout(() => setBubble(null), 1000);
+      }
       console.error("Error voting:", error);
       toast.error("Failed to vote");
     }
