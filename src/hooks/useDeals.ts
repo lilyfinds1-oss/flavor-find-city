@@ -18,6 +18,11 @@ export interface Deal {
     name: string;
     slug: string;
     cover_image: string | null;
+    cuisines?: string[] | null;
+    is_halal?: boolean | null;
+    is_family_friendly?: boolean | null;
+    price_range?: string | null;
+    hours?: any;
   };
 }
 
@@ -32,7 +37,12 @@ export function useDeals() {
           restaurant:restaurants!deals_restaurant_id_fkey (
             name,
             slug,
-            cover_image
+            cover_image,
+            cuisines,
+            is_halal,
+            is_family_friendly,
+            price_range,
+            hours
           )
         `)
         .eq("is_active", true)

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { celebrateXP } from "@/lib/celebrate";
 
 export interface Notification {
   id: string;
@@ -59,6 +60,9 @@ export function useNotifications() {
           setNotifications((prev) => [newNotif, ...prev]);
           setUnreadCount((prev) => prev + 1);
           toast(newNotif.title, { description: newNotif.message || undefined });
+          if (newNotif.type === "xp_earned" || newNotif.type === "badge_earned") {
+            celebrateXP();
+          }
         }
       )
       .subscribe();

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ThumbsUp, ThumbsDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sparkleAt, pulseGlow } from "@/lib/celebrate";
 
 interface ReviewVoteButtonProps {
   reviewId: string;
@@ -16,6 +17,8 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
   const [helpfulVotes, setHelpfulVotes] = useState(initialHelpfulVotes);
   const [userVote, setUserVote] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bubble, setBubble] = useState<number | null>(null);
+  const upRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -86,6 +89,14 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
         setUserVote(isHelpful);
         setHelpfulVotes((prev) => prev + (isHelpful ? 1 : -1));
       }
+
+      // Celebrate helpful up-votes with a little glow + sparkle bubble
+      if (isHelpful && userVote !== true) {
+        pulseGlow(upRef.current, 900);
+        sparkleAt(upRef.current);
+        setBubble(2);
+        window.setTimeout(() => setBubble(null), 1000);
+      }
     } catch (error) {
       console.error("Error voting:", error);
       toast.error("Failed to vote");
@@ -96,23 +107,27 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={loading}
-        onClick={() => handleVote(true)}
-        className={cn(
-          "gap-1",
-          userVote === true && "text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700"
-        )}
-      >
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <ThumbsUp className={cn("w-4 h-4", userVote === true && "fill-current")} />
-        )}
-        <span>{helpfulVotes}</span>
-      </Button>
+      <div className="relative">
+        <Button
+          ref={upRef}
+          variant="ghost"
+          size="sm"
+          disabled={loading}
+          onClick={() => handleVote(true)}
+          className={cn(
+            "gap-1 rounded-full transition-transform active:scale-90",
+            userVote === true && "text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700"
+          )}
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ThumbsUp className={cn("w-4 h-4 transition-transform", userVote === true && "fill-current scale-110")} />
+          )}
+          <span>{helpfulVotes}</span>
+        </Button>
+        {bubble != null && <span className="xp-bubble">+{bubble} XP</span>}
+      </div>
       <Button
         variant="ghost"
         size="sm"
