@@ -97,6 +97,7 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
         setBubble(2);
         window.setTimeout(() => setBubble(null), 1000);
       }
+    } catch (error) {
       console.error("Error voting:", error);
       toast.error("Failed to vote");
     }
@@ -106,23 +107,27 @@ export function ReviewVoteButton({ reviewId, initialHelpfulVotes = 0 }: ReviewVo
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={loading}
-        onClick={() => handleVote(true)}
-        className={cn(
-          "gap-1",
-          userVote === true && "text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700"
-        )}
-      >
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <ThumbsUp className={cn("w-4 h-4", userVote === true && "fill-current")} />
-        )}
-        <span>{helpfulVotes}</span>
-      </Button>
+      <div className="relative">
+        <Button
+          ref={upRef}
+          variant="ghost"
+          size="sm"
+          disabled={loading}
+          onClick={() => handleVote(true)}
+          className={cn(
+            "gap-1 rounded-full transition-transform active:scale-90",
+            userVote === true && "text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700"
+          )}
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ThumbsUp className={cn("w-4 h-4 transition-transform", userVote === true && "fill-current scale-110")} />
+          )}
+          <span>{helpfulVotes}</span>
+        </Button>
+        {bubble != null && <span className="xp-bubble">+{bubble} XP</span>}
+      </div>
       <Button
         variant="ghost"
         size="sm"
